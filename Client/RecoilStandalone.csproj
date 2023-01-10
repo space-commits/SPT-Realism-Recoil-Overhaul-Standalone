@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>RecoilStandalone</AssemblyName>
+    <Description>Standalone Version of SPTRM's Recoil Overhaul</Description>
+    <Version>1.0.0</Version>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Aki.Reflection" />
+	<Reference Include="Aki.Common" />
+	<Reference Include="ItemComponent.Types" />
+    <Reference Include="Comfort" />
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="UnityEngine" />
+    <Reference Include="UnityEngine.CoreModule" />
+	<Reference Include="UnityEngine.InputLegacyModule" />
+	<Reference Include="UnityEngine.JSONSerializeModule" />
+	<Reference Include="UnityEngine.UnityWebRequestModule" />
+    <Reference Include="UnityEngine.UnityWebRequestTextureModule" />
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule" />
+	<Reference Include="AnimationSystem.Types" />
+	<Reference Include="Newtonsoft.Json" />
+    <Reference Include="notGreg.UniformAim" />
+    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+    <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
+  </ItemGroup> 
+  
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
