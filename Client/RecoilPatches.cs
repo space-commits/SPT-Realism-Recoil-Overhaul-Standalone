@@ -8,7 +8,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using System;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
 
     public class OnWeaponParametersChangedPatch : ModulePatch

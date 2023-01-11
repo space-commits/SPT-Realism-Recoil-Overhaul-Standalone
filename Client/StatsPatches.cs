@@ -8,7 +8,7 @@ using System.Reflection;
 using UnityEngine;
 using static EFT.Player;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
 
     public class SingleFireRatePatch : ModulePatch

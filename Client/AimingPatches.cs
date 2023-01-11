@@ -6,7 +6,7 @@ using System.Reflection;
 
 
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class AimingPatch : ModulePatch
     {

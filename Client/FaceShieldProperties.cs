@@ -1,6 +1,6 @@
 ﻿using EFT.InventoryLogic;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
 
     public static class FaceShieldProperties

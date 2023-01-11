@@ -5,7 +5,7 @@ using EFT.UI;
 using UnityEngine;
 
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class GetAttributeIconPatches : ModulePatch
     {

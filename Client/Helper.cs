@@ -2,7 +2,7 @@
 using EFT;
 using EFT.InventoryLogic;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public static class Helper
     {

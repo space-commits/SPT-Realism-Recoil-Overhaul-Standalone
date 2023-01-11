@@ -3,7 +3,7 @@ using EFT;
 using HarmonyLib;
 using System.Reflection;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class UpdateSensitivityPatch : ModulePatch
     {

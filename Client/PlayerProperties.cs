@@ -1,4 +1,4 @@
-﻿namespace RecoilStandalone
+﻿namespace RealismMod
 {
     public static class PlayerProperties
     {

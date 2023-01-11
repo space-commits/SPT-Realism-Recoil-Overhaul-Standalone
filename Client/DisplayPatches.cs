@@ -5,11 +5,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using static RecoilStandalone.Attributes;
+using static RealismMod.Attributes;
 using UnityEngine;
 using EFT;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
 
 

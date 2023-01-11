@@ -9,9 +9,9 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
-using static RecoilStandalone.Helper;
+using static RealismMod.Helper;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class ErgoWeightPatch : ModulePatch
     {

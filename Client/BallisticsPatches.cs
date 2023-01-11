@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class CreateShotPatch : ModulePatch
     {

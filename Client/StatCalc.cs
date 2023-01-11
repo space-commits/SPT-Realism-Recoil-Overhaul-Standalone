@@ -3,8 +3,8 @@ using EFT.InventoryLogic;
 using HarmonyLib;
 using System;
 using UnityEngine;
-using static RecoilStandalone.Helper;
-namespace RecoilStandalone
+using static RealismMod.Helper;
+namespace RealismMod
 {
     public static class StatCalc
     {

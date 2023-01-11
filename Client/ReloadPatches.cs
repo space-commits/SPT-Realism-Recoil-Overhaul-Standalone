@@ -4,7 +4,7 @@ using HarmonyLib;
 using System.Reflection;
 using static EFT.Player;
 
-namespace RecoilStandalone
+namespace RealismMod
 {
 
     public class SetWeaponLevelPatch : ModulePatch

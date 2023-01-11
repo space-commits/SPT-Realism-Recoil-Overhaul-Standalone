@@ -3,7 +3,7 @@ using EFT.InventoryLogic;
 using System.Reflection;
 
 
-namespace RecoilStandalone
+namespace RealismMod
 {
     public class IsKnownMalfTypePatch : ModulePatch
     {
