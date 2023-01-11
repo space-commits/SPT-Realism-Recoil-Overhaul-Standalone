@@ -98,7 +98,7 @@ namespace RealismMod
 
         private void GetPaths()
         {
-            var mod = RequestHandler.GetJson($"/RecoilOverhaul/GetInfo");
+            var mod = RequestHandler.GetJson($"/RecoilStandalone/GetInfo");
             ModPath = Json.Deserialize<string>(mod);
         }
 

@@ -4,7 +4,8 @@ import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
 import { ILogger } from "../types/models/spt/utils/ILogger";
 import { PreAkiModLoader } from "@spt-aki/loaders/PreAkiModLoader";
 import { IPostAkiLoadMod } from "@spt-aki/models/external/IPostAkiLoadMod";
-
+import { DynamicRouterModService } from "@spt-aki/services/mod/dynamicRouter/DynamicRouterModService"
+import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 
 import { Ammo } from "./ammo";
 import { AttatchmentBase as AttachmentBase } from "./attatchment_base";
@@ -24,6 +25,26 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
 
     private path: { resolve: (arg0: string) => any; };
     private modLoader: PreAkiModLoader;
+
+    public preAkiLoad(container: DependencyContainer): void {
+        const jsonUtil = container.resolve<JsonUtil>("JsonUtil");
+
+        const router = container.resolve<DynamicRouterModService>("DynamicRouterModService");
+        this.path = require("path");
+
+        router.registerDynamicRouter(
+            "loadRes",
+            [
+                {
+                    url: "/RecoilStandalone/GetInfo",
+                    action: (url, info, sessionId, output) => {
+                        return jsonUtil.serialize(this.path.resolve(this.modLoader.getModPath("SPTRM-Recoil-Attachment-Standalone")));
+                    }
+                }
+            ],
+            "RecoilStandalone"
+        )
+    }
 
     public postDBLoad(container: DependencyContainer): void {
 
@@ -52,7 +73,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
             weaponsGlobals.loadGlobalWeps();
         }
 
-        logger.warning("");
+        logger.warning(""+tables.templates.items["5447a9cd4bdc2dbd208b4567"]._props.Weight);
     }
 
     public postAkiLoad(container: DependencyContainer) {

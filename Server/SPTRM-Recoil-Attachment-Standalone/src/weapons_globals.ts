@@ -35,6 +35,11 @@ export class WeaponsGlobals {
             }
         }
 
+        this.globalDB.Stamina.AimDrainRate = 0.27;
+        this.globalDB.Stamina.AimConsumptionByPose["x"] = 0.05;
+        this.globalDB.Stamina.AimConsumptionByPose["y"] = 0.3;
+        this.globalDB.Stamina.AimConsumptionByPose["z"] = 1; 
+        
         this.globalDB.Aiming.RecoilXIntensityByPose["x"] = 0.67;
         this.globalDB.Aiming.RecoilXIntensityByPose["y"] = 0.7;
         this.globalDB.Aiming.RecoilXIntensityByPose["z"] = 1;

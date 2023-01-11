@@ -15,31 +15,31 @@ const armorMasksTemplates = require("../db/templates/armor/armorMasksTemplates.j
 
 
 const MuzzleDeviceTemplates = require("../db/templates/attatchments/Default/MuzzleDeviceTemplates.json");
-const BarrelTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/BarrelTemplates.json");
-const MountTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/MountTemplates.json");
-const ReceiverTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/ReceiverTemplates.json");
-const StockTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/StockTemplates.json");
-const ChargingHandleTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/ChargingHandleTemplates.json");
-const ScopeTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/ScopeTemplates.json");
-const IronSightTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/IronSightTemplates.json");
-const MagazineTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/MagazineTemplates.json");
-const AuxiliaryModTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/AuxiliaryModTemplates.json");
-const ForegripTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/ForegripTemplates.json");
-const PistolGripTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/PistolGripTemplates.json");
-const GasblockTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/GasblockTemplates.json");
-const HandguardTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/HandguardTemplates.json");
-const FlashlightLaserTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/FlashlightLaserTemplates.json");
+const BarrelTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/BarrelTemplates.json");
+const MountTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/MountTemplates.json");
+const ReceiverTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/ReceiverTemplates.json");
+const StockTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/StockTemplates.json");
+const ChargingHandleTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/ChargingHandleTemplates.json");
+const ScopeTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/ScopeTemplates.json");
+const IronSightTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/IronSightTemplates.json");
+const MagazineTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/MagazineTemplates.json");
+const AuxiliaryModTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/AuxiliaryModTemplates.json");
+const ForegripTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/ForegripTemplates.json");
+const PistolGripTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/PistolGripTemplates.json");
+const GasblockTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/GasblockTemplates.json");
+const HandguardTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/HandguardTemplates.json");
+const FlashlightLaserTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/FlashlightLaserTemplates.json");
 
-const AssaultRifleTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/AssaultRifleTemplates.json");
-const AssaultCarbineTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/AssaultCarbineTemplates.json");
-const MachinegunTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/MachinegunTemplates.json");
-const MarksmanRifleTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/MarksmanRifleTemplates.json");
-const PistolTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/PistolTemplates.json");
-const ShotgunTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/ShotgunTemplates.json");
-const SMGTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/SMGTemplates.json");
-const SniperRifleTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/SniperRifleTemplates.json");
-const SpecialWeaponTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/SpecialWeaponTemplates.json");
-const GrenadeLauncherTemplates = require("../db/templates/weapons/"+`${weapPath}`+"/GrenadeLauncherTemplates.json");
+const AssaultRifleTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/AssaultRifleTemplates.json");
+const AssaultCarbineTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/AssaultCarbineTemplates.json");
+const MachinegunTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/MachinegunTemplates.json");
+const MarksmanRifleTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/MarksmanRifleTemplates.json");
+const PistolTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/PistolTemplates.json");
+const ShotgunTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/ShotgunTemplates.json");
+const SMGTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/SMGTemplates.json");
+const SniperRifleTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/SniperRifleTemplates.json");
+const SpecialWeaponTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/SpecialWeaponTemplates.json");
+const GrenadeLauncherTemplates = require("../db/templates/weapons/" + `${weapPath}` + "/GrenadeLauncherTemplates.json");
 
 
 export class JsonHandler {
@@ -48,9 +48,8 @@ export class JsonHandler {
     itemDB = this.tables.templates.items;
 
     public pushModsToServer() {
-        this.logger.warning("pushmodsToServer");
 
-        for (let i in this.itemDB) {  
+        for (let i in this.itemDB) {
             let serverItem = this.itemDB[i];
             if (serverItem._props.ToolModdable == true || serverItem._props.ToolModdable == false) {
                 this.callHelper(MuzzleDeviceTemplates, serverItem, this.modPusherHelper);
@@ -126,9 +125,8 @@ export class JsonHandler {
 
     private modPusherHelper(serverItem: any, fileItem: any) {
 
-        this.logger.warning("modPusherHelper");
 
-        if (modConfig.recoil_attachment_overhaul == true && modConfig.legacy_recoil_changes != true && ConfigChecker.dllIsPresent == true) {
+        if (ConfigChecker.dllIsPresent == true) {
             if (serverItem._id === fileItem.ItemID) {
                 serverItem._props.Ergonomics = fileItem.Ergonomics;
                 serverItem._props.Accuracy = fileItem.Accuracy;
@@ -163,15 +161,7 @@ export class JsonHandler {
 
         if (serverItem._id === fileItem.ItemID) {
 
-            if (modConfig.malf_changes == true) {
-                serverItem._props.BaseMalfunctionChance = fileItem.BaseMalfunctionChance;
-                serverItem._props.HeatFactorGun = fileItem.HeatFactorGun;
-                serverItem._props.HeatFactorByShot = fileItem.HeatFactorByShot;
-                serverItem._props.CoolFactorGun = fileItem.CoolFactorGun;
-                serverItem._props.CoolFactorGunMods = fileItem.CoolFactorGunMods;
-            }
-
-            if (modConfig.recoil_attachment_overhaul == true && modConfig.legacy_recoil_changes != true && ConfigChecker.dllIsPresent == true) {
+            if (ConfigChecker.dllIsPresent == true) {
                 serverItem._props.Ergonomics = fileItem.Ergonomics;
                 serverItem._props.RecoilForceUp = fileItem.VerticalRecoil;
                 serverItem._props.CenterOfImpact = fileItem.CenterOfImpact;
