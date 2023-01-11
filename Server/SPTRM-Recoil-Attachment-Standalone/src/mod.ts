@@ -39,7 +39,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
         const descGen = new DescriptionGen(tables);
         const jsonHand = new JsonHandler(tables, logger);
 
-        this.dllChecker(logger, modConfig);
+        this.dllChecker(logger);
 
         if (ConfigChecker.dllIsPresent == true) {
             attachStats.loadAttStats();
@@ -51,20 +51,28 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
             attachBase.loadAttCompat();
             weaponsGlobals.loadGlobalWeps();
         }
+
+        logger.warning("");
     }
 
     public postAkiLoad(container: DependencyContainer) {
         this.modLoader = container.resolve<PreAkiModLoader>("PreAkiModLoader");
     }
 
-    private dllChecker(logger: ILogger, modConfig: any) {
-        const plugin = _path.join(__dirname, '../../../../BepInEx/plugins/RealismMod.dll');
+    private dllChecker(logger: ILogger) {
+        const dll = _path.join(__dirname, '../../../../BepInEx/plugins/RecoilStandalone.dll');
+        const realismdll = _path.join(__dirname, '../../../../BepInEx/plugins/RealismMod.dll');
 
-        if (!fs.existsSync(plugin)) {
-
+        if (!fs.existsSync(dll)) {
             ConfigChecker.dllIsPresent = false;
-        } else {
-            ConfigChecker.dllIsPresent = true;
+            logger.error("RecoilStandalone.dll is missing form path: " + dll + ", mod disabled.");
+        }
+        else if (fs.existsSync(realismdll)) {
+            ConfigChecker.dllIsPresent = false;
+            logger.error("RealismMod.dll is present at path: " + realismdll + ", either use this standalone mod or use Realism Mod. Mod disabled.");
+
+        }
+        else { ConfigChecker.dllIsPresent = true; 
         }
     }
 }
