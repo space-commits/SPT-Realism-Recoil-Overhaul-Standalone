@@ -10,12 +10,14 @@ using static RealismMod.Attributes;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
 using BepInEx.Bootstrap;
+using EFT;
 
 namespace RealismMod
 {
 
 
     [BepInPlugin(PluginInfo.PLUGIN_GUID, PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
+
     public class Plugin : BaseUnityPlugin
     {
         public static ConfigEntry<float> resetTime { get; set; }
@@ -92,9 +94,9 @@ namespace RealismMod
 
         private string ModPath;
 
-        public static bool isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
-        public static bool isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
-
+        public static bool isUniformAimPresent = false;
+        public static bool isBridgePresent = false;
+        public static bool checkedForUniformAim = false;
 
         private void GetPaths()
         {
@@ -214,11 +216,8 @@ namespace RealismMod
             new ProcessPatch().Enable();
             new ShootPatch().Enable();
             new AimingSensitivityPatch().Enable();
+            new UpdateSensitivityPatch().Enable();
 
-            if (isUniformAimPresent == false || isBridgePresent == false)
-            {
-                new UpdateSensitivityPatch().Enable();
-            }
 
             //Aiming Patches + Reload Trigger
             new AimingPatch().Enable();
@@ -289,6 +288,14 @@ namespace RealismMod
 
         void Update()
         {
+            if (checkedForUniformAim == false)
+            {
+
+                isUniformAimPresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.UniformAim");
+                isBridgePresent = Chainloader.PluginInfos.ContainsKey("com.notGreg.RealismModBridge");
+                checkedForUniformAim = true;
+            }
+
             if (Helper.CheckIsReady())
             {
                 Helper.IsReady = true;
@@ -480,6 +487,10 @@ namespace RealismMod
                     currentHRecoilX = Mathf.Clamp(currentHRecoilX * Plugin.hRecoilResetRate.Value, startingHRecoilX, currentHRecoilX);
                     currentHRecoilY = Mathf.Clamp(currentHRecoilY * Plugin.hRecoilResetRate.Value, startingHRecoilY, currentHRecoilY);
 
+                }
+                if (statsAreReset == true && isFiring == false)
+                {
+                    Plugin.currentSens = Plugin.startingSens;
                 }
             }
             else

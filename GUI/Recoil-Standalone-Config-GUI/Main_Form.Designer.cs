@@ -32,6 +32,12 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main_Form));
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.revertButton = new System.Windows.Forms.Button();
+            this.procLabel = new System.Windows.Forms.Label();
+            this.crankCheck = new System.Windows.Forms.CheckBox();
+            this.dispMultLabel = new System.Windows.Forms.Label();
+            this.convMultLabel = new System.Windows.Forms.Label();
+            this.horzRecMultLabel = new System.Windows.Forms.Label();
+            this.vertRecMultLabel = new System.Windows.Forms.Label();
             this.saveButton = new System.Windows.Forms.Button();
             this.revertLabel = new System.Windows.Forms.Label();
             this.savedLabel = new System.Windows.Forms.Label();
@@ -44,19 +50,13 @@
             this.weapPresetCombo = new System.Windows.Forms.ComboBox();
             this.Recoil_Tab = new System.Windows.Forms.TabPage();
             this.globalRecoilGroupBox = new System.Windows.Forms.GroupBox();
-            this.procLabel = new System.Windows.Forms.Label();
-            this.crankCheck = new System.Windows.Forms.CheckBox();
             this.procNumeric = new System.Windows.Forms.NumericUpDown();
             this.globalRecoilModiGroupBox = new System.Windows.Forms.GroupBox();
             this.ergoMultiLabel = new System.Windows.Forms.Label();
             this.ergoNumeric = new System.Windows.Forms.NumericUpDown();
-            this.dispMultLabel = new System.Windows.Forms.Label();
             this.dispNumeric = new System.Windows.Forms.NumericUpDown();
-            this.convMultLabel = new System.Windows.Forms.Label();
             this.convNumeric = new System.Windows.Forms.NumericUpDown();
-            this.horzRecMultLabel = new System.Windows.Forms.Label();
             this.horzRecNumeric = new System.Windows.Forms.NumericUpDown();
-            this.vertRecMultLabel = new System.Windows.Forms.Label();
             this.vertRecNumeric = new System.Windows.Forms.NumericUpDown();
             this.warningTextBox = new System.Windows.Forms.RichTextBox();
             this.mainTabControl = new System.Windows.Forms.TabControl();
@@ -93,6 +93,73 @@
         " UNDONE!");
             this.revertButton.UseVisualStyleBackColor = false;
             this.revertButton.Click += new System.EventHandler(this.revertButton_Click);
+            // 
+            // procLabel
+            // 
+            this.procLabel.AutoSize = true;
+            this.procLabel.Location = new System.Drawing.Point(6, 58);
+            this.procLabel.Name = "procLabel";
+            this.procLabel.Size = new System.Drawing.Size(112, 15);
+            this.procLabel.TabIndex = 11;
+            this.procLabel.Text = "Procedural Intensity";
+            this.toolTip1.SetToolTip(this.procLabel, "This Is The Intensity Of All Weapon-Related Procedural Animations. This Includes " +
+        "Sway, Aim Inertira And Recoil. The Lower It Is, The Less Recoil, Sway And Aim In" +
+        "ertia. Recommended To Leave At 1.");
+            // 
+            // crankCheck
+            // 
+            this.crankCheck.AutoSize = true;
+            this.crankCheck.ForeColor = System.Drawing.Color.White;
+            this.crankCheck.Location = new System.Drawing.Point(6, 33);
+            this.crankCheck.Name = "crankCheck";
+            this.crankCheck.Size = new System.Drawing.Size(136, 19);
+            this.crankCheck.TabIndex = 4;
+            this.crankCheck.Text = "Enable \'Recoil Crank\'";
+            this.toolTip1.SetToolTip(this.crankCheck, "If Recoil Crank Is Enabled, Recoil Will Go Rearwards Into The Shoulder. If It\'s O" +
+        "ff Then Recoil Will Go Forward Like In Unmodded EFT.");
+            this.crankCheck.UseVisualStyleBackColor = true;
+            this.crankCheck.CheckedChanged += new System.EventHandler(this.crankCheck_CheckedChanged);
+            // 
+            // dispMultLabel
+            // 
+            this.dispMultLabel.AutoSize = true;
+            this.dispMultLabel.Location = new System.Drawing.Point(6, 120);
+            this.dispMultLabel.Name = "dispMultLabel";
+            this.dispMultLabel.Size = new System.Drawing.Size(93, 15);
+            this.dispMultLabel.TabIndex = 7;
+            this.dispMultLabel.Text = "Dispersion Multi";
+            this.toolTip1.SetToolTip(this.dispMultLabel, "Dispersion Is Basically The Amount Of Spread. It\'s The Radius In Which Recoil Can" +
+        " Occur, So Higher Dispersion = More Spread.");
+            // 
+            // convMultLabel
+            // 
+            this.convMultLabel.AutoSize = true;
+            this.convMultLabel.Location = new System.Drawing.Point(6, 91);
+            this.convMultLabel.Name = "convMultLabel";
+            this.convMultLabel.Size = new System.Drawing.Size(108, 15);
+            this.convMultLabel.TabIndex = 5;
+            this.convMultLabel.Text = "Convergence Multi";
+            this.toolTip1.SetToolTip(this.convMultLabel, resources.GetString("convMultLabel.ToolTip"));
+            // 
+            // horzRecMultLabel
+            // 
+            this.horzRecMultLabel.AutoSize = true;
+            this.horzRecMultLabel.Location = new System.Drawing.Point(6, 62);
+            this.horzRecMultLabel.Name = "horzRecMultLabel";
+            this.horzRecMultLabel.Size = new System.Drawing.Size(128, 15);
+            this.horzRecMultLabel.TabIndex = 3;
+            this.horzRecMultLabel.Text = "Horizontal Recoil Multi";
+            this.toolTip1.SetToolTip(this.horzRecMultLabel, resources.GetString("horzRecMultLabel.ToolTip"));
+            // 
+            // vertRecMultLabel
+            // 
+            this.vertRecMultLabel.AutoSize = true;
+            this.vertRecMultLabel.Location = new System.Drawing.Point(6, 33);
+            this.vertRecMultLabel.Name = "vertRecMultLabel";
+            this.vertRecMultLabel.Size = new System.Drawing.Size(111, 15);
+            this.vertRecMultLabel.TabIndex = 1;
+            this.vertRecMultLabel.Text = "Vertical Recoil Multi";
+            this.toolTip1.SetToolTip(this.vertRecMultLabel, "Vertical Recoil Multi. Higher Vertical Recoil = More Muzzle Rise And Flip.");
             // 
             // saveButton
             // 
@@ -234,27 +301,6 @@
             this.globalRecoilGroupBox.TabStop = false;
             this.globalRecoilGroupBox.Text = "Global Recoil and Weapon Settings";
             // 
-            // procLabel
-            // 
-            this.procLabel.AutoSize = true;
-            this.procLabel.Location = new System.Drawing.Point(6, 58);
-            this.procLabel.Name = "procLabel";
-            this.procLabel.Size = new System.Drawing.Size(112, 15);
-            this.procLabel.TabIndex = 11;
-            this.procLabel.Text = "Procedural Intensity";
-            // 
-            // crankCheck
-            // 
-            this.crankCheck.AutoSize = true;
-            this.crankCheck.ForeColor = System.Drawing.Color.White;
-            this.crankCheck.Location = new System.Drawing.Point(6, 33);
-            this.crankCheck.Name = "crankCheck";
-            this.crankCheck.Size = new System.Drawing.Size(136, 19);
-            this.crankCheck.TabIndex = 4;
-            this.crankCheck.Text = "Enable \'Recoil Crank\'";
-            this.crankCheck.UseVisualStyleBackColor = true;
-            this.crankCheck.CheckedChanged += new System.EventHandler(this.crankCheck_CheckedChanged);
-            // 
             // procNumeric
             // 
             this.procNumeric.DecimalPlaces = 2;
@@ -312,6 +358,9 @@
             this.ergoMultiLabel.Size = new System.Drawing.Size(62, 15);
             this.ergoMultiLabel.TabIndex = 9;
             this.ergoMultiLabel.Text = "Ergo Multi";
+            this.toolTip1.SetToolTip(this.ergoMultiLabel, "Ergonomics Multi. In This Mod, Higher Ergo = Reduction To Weight And Balance Pena" +
+        "lties, So Faster ADS, Less Aim Sway And Inertira, Faster Weapon Handling (Reload" +
+        "ing, Chambering).");
             // 
             // ergoNumeric
             // 
@@ -342,15 +391,6 @@
             0});
             this.ergoNumeric.ValueChanged += new System.EventHandler(this.ergoNumeric_ValueChanged);
             // 
-            // dispMultLabel
-            // 
-            this.dispMultLabel.AutoSize = true;
-            this.dispMultLabel.Location = new System.Drawing.Point(6, 120);
-            this.dispMultLabel.Name = "dispMultLabel";
-            this.dispMultLabel.Size = new System.Drawing.Size(93, 15);
-            this.dispMultLabel.TabIndex = 7;
-            this.dispMultLabel.Text = "Dispersion Multi";
-            // 
             // dispNumeric
             // 
             this.dispNumeric.DecimalPlaces = 2;
@@ -379,15 +419,6 @@
             0,
             0});
             this.dispNumeric.ValueChanged += new System.EventHandler(this.dispNumeric_ValueChanged);
-            // 
-            // convMultLabel
-            // 
-            this.convMultLabel.AutoSize = true;
-            this.convMultLabel.Location = new System.Drawing.Point(6, 91);
-            this.convMultLabel.Name = "convMultLabel";
-            this.convMultLabel.Size = new System.Drawing.Size(108, 15);
-            this.convMultLabel.TabIndex = 5;
-            this.convMultLabel.Text = "Convergence Multi";
             // 
             // convNumeric
             // 
@@ -418,15 +449,6 @@
             0});
             this.convNumeric.ValueChanged += new System.EventHandler(this.convNumeric_ValueChanged);
             // 
-            // horzRecMultLabel
-            // 
-            this.horzRecMultLabel.AutoSize = true;
-            this.horzRecMultLabel.Location = new System.Drawing.Point(6, 62);
-            this.horzRecMultLabel.Name = "horzRecMultLabel";
-            this.horzRecMultLabel.Size = new System.Drawing.Size(128, 15);
-            this.horzRecMultLabel.TabIndex = 3;
-            this.horzRecMultLabel.Text = "Horizontal Recoil Multi";
-            // 
             // horzRecNumeric
             // 
             this.horzRecNumeric.DecimalPlaces = 2;
@@ -455,15 +477,6 @@
             0,
             0});
             this.horzRecNumeric.ValueChanged += new System.EventHandler(this.horzRecNumeric_ValueChanged);
-            // 
-            // vertRecMultLabel
-            // 
-            this.vertRecMultLabel.AutoSize = true;
-            this.vertRecMultLabel.Location = new System.Drawing.Point(6, 33);
-            this.vertRecMultLabel.Name = "vertRecMultLabel";
-            this.vertRecMultLabel.Size = new System.Drawing.Size(111, 15);
-            this.vertRecMultLabel.TabIndex = 1;
-            this.vertRecMultLabel.Text = "Vertical Recoil Multi";
             // 
             // vertRecNumeric
             // 

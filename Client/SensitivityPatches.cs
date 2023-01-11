@@ -1,4 +1,5 @@
 ﻿using Aki.Reflection.Patching;
+using BepInEx.Bootstrap;
 using EFT;
 using HarmonyLib;
 using System.Reflection;
@@ -12,15 +13,24 @@ namespace RealismMod
             return typeof(Player.FirearmController).GetMethod("UpdateSensitivity");
         }
 
+
+
         [PatchPostfix]
         public static void PatchPostfix(ref Player.FirearmController __instance, ref bool ____isAiming, ref float ____aimingSens)
         {
-            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
 
+            Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(__instance);
             if (!player.IsAI && ____isAiming)
             {
-                Plugin.startingSens = ____aimingSens;
-                Plugin.currentSens = ____aimingSens;
+                if (Plugin.isUniformAimPresent == false || Plugin.isBridgePresent == false)
+                {
+                    Plugin.startingSens = ____aimingSens;
+                    Plugin.currentSens = ____aimingSens;
+                }
+                else
+                {
+                    Plugin.currentSens = Plugin.startingSens;
+                }
             }
         }
     }

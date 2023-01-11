@@ -73,7 +73,6 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
             weaponsGlobals.loadGlobalWeps();
         }
 
-        logger.warning(""+tables.templates.items["5447a9cd4bdc2dbd208b4567"]._props.Weight);
     }
 
     public postAkiLoad(container: DependencyContainer) {

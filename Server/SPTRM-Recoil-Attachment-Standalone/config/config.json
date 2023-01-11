@@ -1,5 +1,5 @@
 {
-    "weap_preset": "TEST",
+    "weap_preset": "Default",
     "att_preset": "Default",
     "recoil_crank": true,
     "procedural_intensity": 1.0,

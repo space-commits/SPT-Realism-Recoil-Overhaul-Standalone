@@ -51,7 +51,6 @@ namespace Realism_Mod_Config_GUI
 
             this.Text = "SPTRM Recoil & Attachment Ovherual Standalone " + modVer + " SPT " + sptVer;
 
-            modVerLabel.Text = modVer;
         }
 
         private void setNumericLimits() 

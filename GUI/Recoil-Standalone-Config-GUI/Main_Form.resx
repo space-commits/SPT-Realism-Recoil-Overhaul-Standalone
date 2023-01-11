@@ -60,6 +60,13 @@
   <metadata name="toolTip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="convMultLabel.ToolTip" xml:space="preserve">
+    <value>Also Known As 'Auto Compensation', This Is The Speed At Which The Gun Comes Under Control. In This Mod Convergence Only Works This Way For Semi Auto, In Full Auto Convergence Dictates The Overall Amount Of Recoil Climb And How Snappy It Is. Basically, Lower = More Recoil That Is More Floaty.</value>
+  </data>
+  <data name="horzRecMultLabel.ToolTip" xml:space="preserve">
+    <value>Horizontal Recoil. Horizontal Recoil In EFT Is Actually The Front/Rear Recoil Impulse. With 'Recoil Crank' Enabled More Horizontal Recoil = More Recoil Into The Shoulder, If Disabled Recoil Will Go Forward Instead.
+</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="Preset_Tab.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
