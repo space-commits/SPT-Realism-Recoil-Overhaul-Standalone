@@ -38,6 +38,7 @@
             this.convMultLabel = new System.Windows.Forms.Label();
             this.horzRecMultLabel = new System.Windows.Forms.Label();
             this.vertRecMultLabel = new System.Windows.Forms.Label();
+            this.ergoMultiLabel = new System.Windows.Forms.Label();
             this.saveButton = new System.Windows.Forms.Button();
             this.revertLabel = new System.Windows.Forms.Label();
             this.savedLabel = new System.Windows.Forms.Label();
@@ -52,7 +53,6 @@
             this.globalRecoilGroupBox = new System.Windows.Forms.GroupBox();
             this.procNumeric = new System.Windows.Forms.NumericUpDown();
             this.globalRecoilModiGroupBox = new System.Windows.Forms.GroupBox();
-            this.ergoMultiLabel = new System.Windows.Forms.Label();
             this.ergoNumeric = new System.Windows.Forms.NumericUpDown();
             this.dispNumeric = new System.Windows.Forms.NumericUpDown();
             this.convNumeric = new System.Windows.Forms.NumericUpDown();
@@ -160,6 +160,18 @@
             this.vertRecMultLabel.TabIndex = 1;
             this.vertRecMultLabel.Text = "Vertical Recoil Multi";
             this.toolTip1.SetToolTip(this.vertRecMultLabel, "Vertical Recoil Multi. Higher Vertical Recoil = More Muzzle Rise And Flip.");
+            // 
+            // ergoMultiLabel
+            // 
+            this.ergoMultiLabel.AutoSize = true;
+            this.ergoMultiLabel.Location = new System.Drawing.Point(6, 149);
+            this.ergoMultiLabel.Name = "ergoMultiLabel";
+            this.ergoMultiLabel.Size = new System.Drawing.Size(62, 15);
+            this.ergoMultiLabel.TabIndex = 9;
+            this.ergoMultiLabel.Text = "Ergo Multi";
+            this.toolTip1.SetToolTip(this.ergoMultiLabel, "Ergonomics Multi. In This Mod, Higher Ergo = Reduction To Weight And Balance Pena" +
+        "lties, So Faster ADS, Less Aim Sway And Inertira, Faster Weapon Handling (Reload" +
+        "ing, Chambering).");
             // 
             // saveButton
             // 
@@ -350,18 +362,6 @@
             this.globalRecoilModiGroupBox.TabStop = false;
             this.globalRecoilModiGroupBox.Text = "Global Recoil Modifiers";
             // 
-            // ergoMultiLabel
-            // 
-            this.ergoMultiLabel.AutoSize = true;
-            this.ergoMultiLabel.Location = new System.Drawing.Point(6, 149);
-            this.ergoMultiLabel.Name = "ergoMultiLabel";
-            this.ergoMultiLabel.Size = new System.Drawing.Size(62, 15);
-            this.ergoMultiLabel.TabIndex = 9;
-            this.ergoMultiLabel.Text = "Ergo Multi";
-            this.toolTip1.SetToolTip(this.ergoMultiLabel, "Ergonomics Multi. In This Mod, Higher Ergo = Reduction To Weight And Balance Pena" +
-        "lties, So Faster ADS, Less Aim Sway And Inertira, Faster Weapon Handling (Reload" +
-        "ing, Chambering).");
-            // 
             // ergoNumeric
             // 
             this.ergoNumeric.DecimalPlaces = 2;
@@ -511,7 +511,7 @@
             // 
             this.warningTextBox.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.warningTextBox.ForeColor = System.Drawing.Color.Red;
-            this.warningTextBox.Location = new System.Drawing.Point(385, 192);
+            this.warningTextBox.Location = new System.Drawing.Point(385, 206);
             this.warningTextBox.Name = "warningTextBox";
             this.warningTextBox.Size = new System.Drawing.Size(628, 225);
             this.warningTextBox.TabIndex = 11;

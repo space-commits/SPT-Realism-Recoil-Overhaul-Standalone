@@ -25,8 +25,6 @@ namespace Realism_Mod_Config_GUI
         public Main_Form()
         {
             InitializeComponent();
-
-
             setTitleBar();
             setNumericLimits();
             SetPresetComboBoxes(weapPresetFilePath, weapPresetCombo);
@@ -49,7 +47,7 @@ namespace Realism_Mod_Config_GUI
             string modVer = "v1.0.0";
             string sptVer = "v3.4.1";
 
-            this.Text = "SPTRM Recoil & Attachment Ovherual Standalone " + modVer + " SPT " + sptVer;
+            this.Text = "SPTRM Recoil & Attachment Overhaul Standalone " + modVer + " SPT " + sptVer;
 
         }
 

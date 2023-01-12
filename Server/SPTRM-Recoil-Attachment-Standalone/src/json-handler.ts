@@ -14,7 +14,7 @@ const armorVestsTemplates = require("../db/templates/armor/armorVestsTemplates.j
 const armorMasksTemplates = require("../db/templates/armor/armorMasksTemplates.json");
 
 
-const MuzzleDeviceTemplates = require("../db/templates/attatchments/Default/MuzzleDeviceTemplates.json");
+const MuzzleDeviceTemplates = require("../db/templates/attatchments/"+`${attPath}`+"/MuzzleDeviceTemplates.json");
 const BarrelTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/BarrelTemplates.json");
 const MountTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/MountTemplates.json");
 const ReceiverTemplates = require("../db/templates/attatchments/" + `${attPath}` + "/ReceiverTemplates.json");
