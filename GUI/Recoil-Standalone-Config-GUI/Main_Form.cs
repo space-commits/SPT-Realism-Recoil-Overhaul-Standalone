@@ -35,10 +35,11 @@ namespace Realism_Mod_Config_GUI
                 warningTextBox.Hide();
                 SetDisplayValues();
             }
-            catch
+            catch (Exception exception)
             {
                 warningTextBox.Show();
-                warningTextBox.Text = $"config.json not found at file path: {Path.Combine(Path.GetDirectoryName(Environment.ProcessPath))}\\config\\ or specified preset wasn't found!";
+                /* warningTextBox.Text = $"config.json not found at file path: {Path.Combine(Path.GetDirectoryName(Environment.ProcessPath))}\\config\\";*/
+                warningTextBox.Text = $"{exception.Message}";
             }
         }
 
