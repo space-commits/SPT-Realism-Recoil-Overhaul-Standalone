@@ -152,14 +152,21 @@ namespace RealismMod
 
         void Awake()
         {
+            try
+            {
+                GetPaths();
+                CacheIcons();
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception);
+            }
 
-            GetPaths();
-            CacheIcons();
 
             string RecoilSettings = "1. Recoil Settings";
             string AdvancedRecoilSettings = "2. Advanced Settings";
             string WeapStatSettings = "3. Weapon Stat Settings";
-            string MiscSettings = "4. Misc. Settigns";
+            string MiscSettings = "4. Misc. Settings";
 
             enableProgramK = Config.Bind<bool>(MiscSettings, "Enable Extended Stock Slots Compatibility", false, new ConfigDescription("Requires Restart. Enables Integration Of The Extended Stock Slots Mod. Each Buffer Position Increases Recoil Reduction While Reducing Ergo The Further Out The Stock Is Extended.", null, new ConfigurationManagerAttributes { Order = 1 }));
             enableFSPatch = Config.Bind<bool>(MiscSettings, "Enable Faceshield Patch", true, new ConfigDescription("Faceshields Block ADS Unless The Specfic Stock/Weapon/Faceshield Allows It.", null, new ConfigurationManagerAttributes { Order = 2 }));

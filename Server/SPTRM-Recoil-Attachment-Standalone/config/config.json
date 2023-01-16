@@ -1,11 +1,1 @@
-{
-    "weap_preset": "Default",
-    "att_preset": "Default",
-    "recoil_crank": true,
-    "procedural_intensity": 1.0,
-    "vert_recoil_multi": 1.0,
-    "horz_recoil_multi": 1.0,
-    "convergence_multi": 1.0,
-    "dispersion_multi": 1.0,
-    "ergo_multi": 1.0
-}
+{"weap_preset":"Default","att_preset":"Default","recoil_crank":true,"procedural_intensity":1.0,"vert_recoil_multi":1.0,"horz_recoil_multi":1.0,"convergence_multi":1.0,"dispersion_multi":1.0,"ergo_multi":1.0}

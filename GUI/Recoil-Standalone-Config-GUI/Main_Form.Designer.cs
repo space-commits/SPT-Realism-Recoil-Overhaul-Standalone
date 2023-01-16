@@ -41,7 +41,6 @@
             this.ergoMultiLabel = new System.Windows.Forms.Label();
             this.saveButton = new System.Windows.Forms.Button();
             this.revertLabel = new System.Windows.Forms.Label();
-            this.savedLabel = new System.Windows.Forms.Label();
             this.modVerLabel = new System.Windows.Forms.Label();
             this.Preset_Tab = new System.Windows.Forms.TabPage();
             this.label1 = new System.Windows.Forms.Label();
@@ -60,6 +59,8 @@
             this.vertRecNumeric = new System.Windows.Forms.NumericUpDown();
             this.warningTextBox = new System.Windows.Forms.RichTextBox();
             this.mainTabControl = new System.Windows.Forms.TabControl();
+            this.savedLabel = new System.Windows.Forms.Label();
+            this.verLabel = new System.Windows.Forms.Label();
             this.Preset_Tab.SuspendLayout();
             this.Recoil_Tab.SuspendLayout();
             this.globalRecoilGroupBox.SuspendLayout();
@@ -197,18 +198,6 @@
             this.revertLabel.TabIndex = 9;
             this.revertLabel.Text = "Settings Reverted!";
             // 
-            // savedLabel
-            // 
-            this.savedLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.savedLabel.AutoSize = true;
-            this.savedLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
-            this.savedLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
-            this.savedLabel.Location = new System.Drawing.Point(1227, 699);
-            this.savedLabel.Name = "savedLabel";
-            this.savedLabel.Size = new System.Drawing.Size(86, 15);
-            this.savedLabel.TabIndex = 10;
-            this.savedLabel.Text = "Settings Saved!";
-            // 
             // modVerLabel
             // 
             this.modVerLabel.AutoSize = true;
@@ -289,9 +278,9 @@
             this.Recoil_Tab.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
             this.Recoil_Tab.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("Recoil_Tab.BackgroundImage")));
             this.Recoil_Tab.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
+            this.Recoil_Tab.Controls.Add(this.warningTextBox);
             this.Recoil_Tab.Controls.Add(this.globalRecoilGroupBox);
             this.Recoil_Tab.Controls.Add(this.globalRecoilModiGroupBox);
-            this.Recoil_Tab.Controls.Add(this.warningTextBox);
             this.Recoil_Tab.Location = new System.Drawing.Point(4, 24);
             this.Recoil_Tab.Margin = new System.Windows.Forms.Padding(0);
             this.Recoil_Tab.Name = "Recoil_Tab";
@@ -511,9 +500,10 @@
             // 
             this.warningTextBox.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.warningTextBox.ForeColor = System.Drawing.Color.Red;
-            this.warningTextBox.Location = new System.Drawing.Point(385, 206);
+            this.warningTextBox.Location = new System.Drawing.Point(385, 113);
             this.warningTextBox.Name = "warningTextBox";
-            this.warningTextBox.Size = new System.Drawing.Size(628, 225);
+            this.warningTextBox.ReadOnly = true;
+            this.warningTextBox.Size = new System.Drawing.Size(628, 330);
             this.warningTextBox.TabIndex = 11;
             this.warningTextBox.Text = "CONFIG.JSON NOT FOUND! PLEASE ENSURE ALL FILES ARE IN THE CORRECT LOCATION!\n....";
             // 
@@ -533,6 +523,31 @@
             this.mainTabControl.Size = new System.Drawing.Size(1339, 764);
             this.mainTabControl.TabIndex = 0;
             // 
+            // savedLabel
+            // 
+            this.savedLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.savedLabel.AutoSize = true;
+            this.savedLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
+            this.savedLabel.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
+            this.savedLabel.Location = new System.Drawing.Point(1227, 698);
+            this.savedLabel.Name = "savedLabel";
+            this.savedLabel.Size = new System.Drawing.Size(86, 15);
+            this.savedLabel.TabIndex = 10;
+            this.savedLabel.Text = "Settings Saved!";
+            // 
+            // verLabel
+            // 
+            this.verLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.verLabel.AutoSize = true;
+            this.verLabel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(36)))), ((int)(((byte)(36)))), ((int)(((byte)(36)))));
+            this.verLabel.Font = new System.Drawing.Font("Segoe UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.verLabel.ForeColor = System.Drawing.Color.White;
+            this.verLabel.Location = new System.Drawing.Point(911, 468);
+            this.verLabel.Name = "verLabel";
+            this.verLabel.Size = new System.Drawing.Size(78, 25);
+            this.verLabel.TabIndex = 12;
+            this.verLabel.Text = "modVer";
+            // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -540,6 +555,7 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Center;
             this.ClientSize = new System.Drawing.Size(1327, 755);
+            this.Controls.Add(this.verLabel);
             this.Controls.Add(this.savedLabel);
             this.Controls.Add(this.revertLabel);
             this.Controls.Add(this.saveButton);
@@ -574,7 +590,6 @@
         private Button revertButton;
         private Button saveButton;
         private Label revertLabel;
-        private Label savedLabel;
         private Label modVerLabel;
         private TabPage Preset_Tab;
         private TabPage Recoil_Tab;
@@ -600,5 +615,7 @@
         private Label presetHelpLabel;
         private Label label1;
         private ComboBox attachPresetCombo;
+        private Label verLabel;
+        private Label savedLabel;
     }
 }

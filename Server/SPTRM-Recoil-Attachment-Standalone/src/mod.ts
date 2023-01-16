@@ -85,11 +85,11 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
 
         if (!fs.existsSync(dll)) {
             ConfigChecker.dllIsPresent = false;
-            logger.error("RecoilStandalone.dll is missing form path: " + dll + ", mod disabled.");
+            logger.error("Recoil Standalone: RecoilStandalone.dll is missing form path: " + dll + ", mod disabled.");
         }
         else if (fs.existsSync(realismdll)) {
             ConfigChecker.dllIsPresent = false;
-            logger.error("RealismMod.dll is present at path: " + realismdll + ", either use this standalone mod or use Realism Mod. Mod disabled.");
+            logger.error("Recoil Standalone: RealismMod.dll is present at path: " + realismdll + ", either use this standalone mod or use Realism Mod. Mod disabled.");
 
         }
         else { ConfigChecker.dllIsPresent = true; 

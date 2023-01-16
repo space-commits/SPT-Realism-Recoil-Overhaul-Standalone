@@ -6,7 +6,6 @@ namespace Realism_Mod_Config_GUI
 {
     public partial class Main_Form : Form
     {
-
         public static string ConfigFilePath = Path.Combine(Path.GetDirectoryName(Environment.ProcessPath), @"config\config.json");
         public static string ConfigJSON = File.ReadAllText(ConfigFilePath);
         public static ConfigTemplate Config = JsonConvert.DeserializeObject<ConfigTemplate>(ConfigJSON);
@@ -19,34 +18,32 @@ namespace Realism_Mod_Config_GUI
         public static DirectoryInfo attDI = new DirectoryInfo(attFilePath);
         public static DirectoryInfo[] attPresetFilePath = attDI.GetDirectories();
 
-
-
-
         public Main_Form()
         {
             InitializeComponent();
             setTitleBar();
             setNumericLimits();
-            SetPresetComboBoxes(weapPresetFilePath, weapPresetCombo);
-            SetPresetComboBoxes(attPresetFilePath, attachPresetCombo);
+
 
             try
             {
                 warningTextBox.Hide();
                 SetDisplayValues();
+                SetPresetComboBoxes(weapPresetFilePath, weapPresetCombo);
+                SetPresetComboBoxes(attPresetFilePath, attachPresetCombo);
             }
             catch (Exception exception)
             {
                 warningTextBox.Show();
-                /* warningTextBox.Text = $"config.json not found at file path: {Path.Combine(Path.GetDirectoryName(Environment.ProcessPath))}\\config\\";*/
-                warningTextBox.Text = $"{exception.Message}";
+                warningTextBox.Text = $"{exception.Message}  \n\nMake sure this app is located in the 'SPTRM-Recoil-Attachment-Standalone' folder, and make sure the 'config.json' file is located in 'config\\config.json'";
             }
         }
 
         private void setTitleBar() 
         {
-            string modVer = "v1.0.0";
+            string modVer = "v1.0.2";
             string sptVer = "v3.4.1";
+            verLabel.Text = modVer;
 
             this.Text = "SPTRM Recoil & Attachment Overhaul Standalone " + modVer + " SPT " + sptVer;
 
@@ -153,7 +150,6 @@ namespace Realism_Mod_Config_GUI
             public decimal convergence_multi { get; set; }
             public decimal dispersion_multi { get; set; }
             public decimal ergo_multi { get; set; }
-
         }
 
         private void weapPresetCombo_SelectedIndexChanged(object sender, EventArgs e)
@@ -207,6 +203,7 @@ namespace Realism_Mod_Config_GUI
             savedLabel.ForeColor = Color.GreenYellow;
             Timer(savedLabel);
         }
+
         private void revertButton_Click(object sender, EventArgs e)
         {
             SetDefaultValues();
