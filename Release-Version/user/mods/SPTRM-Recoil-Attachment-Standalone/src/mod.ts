@@ -17,6 +17,7 @@ import * as _path from 'path';
 import { DescriptionGen } from "./description_gen";
 import { JsonHandler } from "./json-handler";
 import { Arrays } from "./arrays";
+import { Quests } from "./quests";
 
 const fs = require('fs');
 const modConfig = require("../config/config.json");
@@ -59,6 +60,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
         const weaponsGlobals = new WeaponsGlobals(logger, tables, modConfig);
         const descGen = new DescriptionGen(tables);
         const jsonHand = new JsonHandler(tables, logger);
+        const quests = new Quests(tables);
 
         this.dllChecker(logger);
 
@@ -71,6 +73,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
             ammo.loadAmmoFirerateChanges();
             attachBase.loadAttCompat();
             weaponsGlobals.loadGlobalWeps();
+            quests.fixMechancicQuests();
         }
 
     }
@@ -85,11 +88,11 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
 
         if (!fs.existsSync(dll)) {
             ConfigChecker.dllIsPresent = false;
-            logger.error("RecoilStandalone.dll is missing form path: " + dll + ", mod disabled.");
+            logger.error("Recoil Standalone: RecoilStandalone.dll is missing form path: " + dll + ", mod disabled.");
         }
         else if (fs.existsSync(realismdll)) {
             ConfigChecker.dllIsPresent = false;
-            logger.error("RealismMod.dll is present at path: " + realismdll + ", either use this standalone mod or use Realism Mod. Mod disabled.");
+            logger.error("Recoil Standalone: RealismMod.dll is present at path: " + realismdll + ", either use this standalone mod or use Realism Mod. Mod disabled.");
 
         }
         else { ConfigChecker.dllIsPresent = true; 

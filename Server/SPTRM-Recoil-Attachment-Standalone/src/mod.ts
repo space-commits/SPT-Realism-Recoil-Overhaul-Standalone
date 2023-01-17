@@ -17,6 +17,7 @@ import * as _path from 'path';
 import { DescriptionGen } from "./description_gen";
 import { JsonHandler } from "./json-handler";
 import { Arrays } from "./arrays";
+import { Quests } from "./quests";
 
 const fs = require('fs');
 const modConfig = require("../config/config.json");
@@ -59,6 +60,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
         const weaponsGlobals = new WeaponsGlobals(logger, tables, modConfig);
         const descGen = new DescriptionGen(tables);
         const jsonHand = new JsonHandler(tables, logger);
+        const quests = new Quests(tables);
 
         this.dllChecker(logger);
 
@@ -71,6 +73,7 @@ class Main implements IPostDBLoadMod, IPostAkiLoadMod {
             ammo.loadAmmoFirerateChanges();
             attachBase.loadAttCompat();
             weaponsGlobals.loadGlobalWeps();
+            quests.fixMechancicQuests();
         }
 
     }
