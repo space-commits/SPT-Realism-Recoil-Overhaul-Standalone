@@ -234,11 +234,8 @@ namespace RealismMod
                 totalCamRecoil *= WeaponProperties.FoldedCamRecoilFactor;
                 totalDispersion *= WeaponProperties.FoldedDispersionFactor;
                 totalRecoilAngle *= WeaponProperties.FoldedRecoilAngleFactor;
+                totalCOI *= WeaponProperties.FoldedCOIFactor;
 
-                if (weap.WeapClass != "shotgun")
-                {
-                    totalCOI *= WeaponProperties.FoldedCOIFactor;
-                }
             }
 
             totalCOIDelta = (baseCOI - totalCOI) / (baseCOI * -1f);
