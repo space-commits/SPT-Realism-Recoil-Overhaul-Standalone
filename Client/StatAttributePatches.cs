@@ -5,7 +5,7 @@ using EFT.UI;
 using UnityEngine;
 
 
-namespace RealismMod
+namespace RecoilStandalone
 {
     public class GetAttributeIconPatches : ModulePatch
     {
@@ -57,7 +57,11 @@ namespace RealismMod
             ArmorDamage,
             FragmentationChance,
             BluntThroughput,
-            ShotDispersion
+            ShotDispersion,
+            GearReloadSpeed,
+            CanSpall,
+            SpallReduction,
+            CanAds
         }
 
         public static string GetName(this ENewItemAttributeId id)
@@ -101,9 +105,17 @@ namespace RealismMod
                 case ENewItemAttributeId.FragmentationChance:
                     return "FRAGMENTATION CHANCE";
                 case ENewItemAttributeId.BluntThroughput:
-                    return "BLUNT THROUGHPUT";
+                    return "BLUNT DAMAGE REDUCTION";
                 case ENewItemAttributeId.ShotDispersion:
                     return "SHOT SPREAD REDUCTION";
+                case ENewItemAttributeId.CanSpall:
+                    return "CAN SPALL";
+                case ENewItemAttributeId.SpallReduction:
+                    return "SPALLING REDUCTION";
+                case ENewItemAttributeId.GearReloadSpeed:
+                    return "RELOAD SPEED";
+                case ENewItemAttributeId.CanAds:
+                    return "ALLOWS ADS";
                 default:
                     return id.ToString();
             }

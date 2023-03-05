@@ -7,9 +7,85 @@ using System.Reflection;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using System;
+using static EFT.Player;
+using EFT.Interactive;
 
-namespace RealismMod
+namespace RecoilStandalone
 {
+
+
+    public class method_20Patch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_20", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+
+            if (firearmController != null)
+            {
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (player.IsYourPlayer == true)
+                {
+                   float swayIntensity = Plugin.SwayIntensity.Value;
+                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
+                    __instance.Breath.Intensity = swayIntensity * __instance.IntensityByPoseLevel; 
+                    __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = swayIntensity * swayIntensity);
+                    __instance.CrankRecoil = true;
+                }
+            }
+        }
+    }
+
+    public class UpdateSwayFactorsPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+
+            if (firearmController != null)
+            {
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
+                if (player.IsYourPlayer == true) 
+                {
+                    float float_20 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").GetValue(__instance);
+                    __instance.MotionReact.SwayFactors = new Vector3(float_20, __instance.IsAiming ? (float_20 * 0.3f) : float_20, float_20) * Plugin.SwayIntensity.Value;
+                }
+            }
+        }
+    }
+
+    public class GetAimingPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Player.FirearmController).GetMethod("get_IsAiming", BindingFlags.Public | BindingFlags.Instance);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
+        {
+            if (Helper.IsReady == true)
+            {
+                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
+                if (!player.IsAI)
+                {
+                    Plugin.IsAiming = ____isAiming;
+                }
+            }
+        }
+    }
+
 
     public class OnWeaponParametersChangedPatch : ModulePatch
     {
@@ -18,80 +94,48 @@ namespace RealismMod
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public BackendConfigSettingsClass.GClass1221 GlobalsAiming
+        [PatchPostfix]
+        private static void PatchPostfix(ref ShotEffector __instance)
         {
-            get
+            IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+
+            if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                return Singleton<BackendConfigSettingsClass>.Instance.Aiming;
-            }
-        }
+                SkillsClass.GClass1675 buffInfo = (SkillsClass.GClass1675)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
+                WeaponTemplate template = _weapon.WeaponTemplate;
 
-        [PatchPrefix]
-        private static bool Prefix(ref ShotEffector __instance)
-        {
-            Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+                Plugin.CurrentlyEquipedWeapon = weaponClass;
 
-            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
-            {
-                OnWeaponParametersChangedPatch p = new OnWeaponParametersChangedPatch();
-                SkillsClass.GClass1560 buffInfo = (SkillsClass.GClass1560)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
-                WeaponTemplate template = wep.Template;
+                float cameraRecoil = template.CameraRecoil * Plugin.CamMulti.Value;
+     
+                Plugin.StartingCamRecoilX = (float)Math.Round(cameraRecoil, 4);
+                Plugin.StartingCamRecoilY = (float)Math.Round(-cameraRecoil, 4);
+                Plugin.CurrentCamRecoilX = Plugin.StartingCamRecoilX;
+                Plugin.CurrentCamRecoilY = Plugin.StartingCamRecoilY;
 
-                float vRecoilDelta = WeaponProperties.VRecoilDelta;
-                float hRecoilDelta = WeaponProperties.HRecoilDelta;
+                Plugin.StartingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
+                Plugin.StartingVRecoilY = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
+                Plugin.CurrentVRecoilX = Plugin.StartingVRecoilX;
+                Plugin.CurrentVRecoilY = Plugin.StartingVRecoilY;
 
-                float totalVRecoilDelta = Mathf.Max(0f, (1f + vRecoilDelta) * (1f - buffInfo.RecoilSupression.x));
-                float totalHRecoilDelta = Mathf.Max(0f, (1f + hRecoilDelta) * (1f - buffInfo.RecoilSupression.x));
+                Plugin.StartingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
+                Plugin.StartingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
+                Plugin.CurrentHRecoilX = Plugin.StartingHRecoilX;
+                Plugin.CurrentHRecoilY = Plugin.StartingHRecoilY;
 
-                __instance.RecoilStrengthXy = new Vector2(0.9f, 1.15f) * __instance.ConvertFromTaxanomy(template.RecoilForceUp * totalVRecoilDelta);
-                __instance.RecoilStrengthZ = new Vector2(0.65f, 1.05f) * __instance.ConvertFromTaxanomy(template.RecoilForceBack * totalHRecoilDelta);
+                Plugin.StartingConvergence = (float)Math.Round(_weapon.WeaponTemplate.Convergence * Singleton<BackendConfigSettingsClass>.Instance.Aiming.RecoilConvergenceMult, 2);
+                Plugin.CurrentConvergence = Plugin.StartingConvergence;
+                Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
-                float buffFactoredDispersion = WeaponProperties.Dispersion * (1f - buffInfo.RecoilSupression.y);
-                float angle = Mathf.LerpAngle(WeaponProperties.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
-                __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
-                __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
+                BackendConfigSettingsClass.GClass1310 Aiming = Singleton<BackendConfigSettingsClass>.Instance.Aiming;
 
-                float cameraRecoil = WeaponProperties.CamRecoil;
-                __instance.ShotVals[3].Intensity = cameraRecoil;
-                __instance.ShotVals[4].Intensity = -cameraRecoil;
+                Plugin.StartingDamping = (float)Math.Round(Aiming.RecoilDamping, 3);
+                Plugin.CurrentDamping = Plugin.StartingDamping;
 
-                Plugin.startingCamRecoilX = (float)Math.Round(cameraRecoil, 4);
-                Plugin.startingCamRecoilY = (float)Math.Round(-cameraRecoil, 4);
-                Plugin.currentCamRecoilX = Plugin.startingCamRecoilX;
-                Plugin.currentCamRecoilY = Plugin.startingCamRecoilY;
+                Plugin.StartingHandDamping = (float)Math.Round(Aiming.RecoilHandDamping, 3);
+                Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
 
-                Plugin.startingVRecoilX = (float)Math.Round(__instance.RecoilStrengthXy.x, 3);
-                Plugin.startingVRecoilY = (float)Math.Round(__instance.RecoilStrengthXy.y, 3);
-                Plugin.currentVRecoilX = Plugin.startingVRecoilX;
-                Plugin.currentVRecoilY = Plugin.startingVRecoilY;
-
-                Plugin.startingHRecoilX = (float)Math.Round(__instance.RecoilStrengthZ.x, 3);
-                Plugin.startingHRecoilY = (float)Math.Round(__instance.RecoilStrengthZ.y, 3);
-                Plugin.currentHRecoilX = Plugin.startingHRecoilX;
-                Plugin.currentHRecoilY = Plugin.startingHRecoilY;
-
-                Plugin.startingConvergence = (float)Math.Round(wep.Template.Convergence * p.GlobalsAiming.RecoilConvergenceMult, 2);
-                Plugin.currentConvergence = Plugin.startingConvergence;
-                Plugin.convergenceProporitonK = (float)Math.Round(Plugin.startingConvergence * Plugin.startingVRecoilX, 2);
-
-                Plugin.startingRecoilAngle = (float)Math.Round(angle, 2);
-
-                Plugin.startingDispersion = (float)Math.Round(buffFactoredDispersion, 2);
-                Plugin.currentDispersion = Plugin.startingDispersion;
-/*                Plugin.dispersionProportionK = (float)Math.Round(Plugin.startingDispersion * Plugin.startingVRecoilX, 2);
-*/
-                Plugin.startingDamping = (float)Math.Round(WeaponProperties.TotalRecoilDamping, 3);
-                Plugin.currentDamping = Plugin.startingDamping;
-
-                Plugin.startingHandDamping = (float)Math.Round(WeaponProperties.TotalRecoilHandDamping, 3);
-                Plugin.currentHandDamping = Plugin.startingHandDamping;
-
-
-                return false;
-            }
-            else
-            {
-                return true;
             }
         }
     }
@@ -106,58 +150,61 @@ namespace RealismMod
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
 
-            Weapon wep = (Weapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            IWeapon iWeapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
 
-            if (wep.Owner.ID.StartsWith("pmc") || wep.Owner.ID.StartsWith("scav"))
+            if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
 
-                Plugin.timer = 0f;
-                Plugin.isFiring = true;
-                Plugin.shotCount++;
+                Plugin.Timer = 0f;
+                Plugin.IsFiring = true;
+                Plugin.ShotCount++;
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-                float buffFactoredDispersion = Plugin.currentDispersion * str * PlayerProperties.RecoilInjuryMulti;
-                float angle = Plugin.startingRecoilAngle;
-                __instance.RecoilDegree = new Vector2(angle - buffFactoredDispersion, angle + buffFactoredDispersion);
-                __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                //instead of shot count, can check weapon firemode in here. Can also get weapon class/type.
-                //would be more efficient to have a static bool "getsSemiRecoilIncrease" and check the weap class in stat detla instead.
-                //1.5f recoil on pistols unironically felt good, even a lot of the rifles. Some got a bit too fucked by it some some rebalancing might be needed.
-                //wep.FireMode.FireMode == Weapon.EFireMode.single, problem with restrcting it to semi only is that then firing one shot in full auto is more controlalble than semi
-                if (Plugin.shotCount == 1 && WeaponProperties.ShouldGetSemiIncrease == true)
+                if (Plugin.ShotCount == 1)
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 1.35f;
-                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 1.35f;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 1.35f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.35f;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.35f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
                 }
-                else if (Plugin.shotCount > 1)
+                else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX * 0.63f;
-                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY * 0.63f;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX * 0.6f;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY * 0.6f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 0.63f;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 0.63f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 0.6f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 0.6f;
                 }
                 else
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.currentVRecoilX;
-                    __instance.RecoilStrengthXy.y = Plugin.currentVRecoilY;
-                    __instance.RecoilStrengthZ.x = Plugin.currentHRecoilX;
-                    __instance.RecoilStrengthZ.y = Plugin.currentHRecoilY;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                __instance.ShotVals[3].Intensity = Plugin.currentCamRecoilX * str * PlayerProperties.RecoilInjuryMulti;
-                __instance.ShotVals[4].Intensity = Plugin.currentCamRecoilY * str * PlayerProperties.RecoilInjuryMulti;
+                if (weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                {
+                    __instance.RecoilStrengthZ.x *= 0.5f;
+                    __instance.RecoilStrengthZ.y *= 0.5f;
+                    __instance.RecoilStrengthXy.x *= 0.25f;
+                    __instance.RecoilStrengthXy.y *= 0.25f;
+                }
 
-                float num = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float num2 = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * PlayerProperties.RecoilInjuryMulti;
-                float num3 = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * PlayerProperties.RecoilInjuryMulti;
-                __instance.RecoilDirection = new Vector3(-Mathf.Sin(num) * num2 * _separateIntensityFactors.x, Mathf.Cos(num) * num2 * _separateIntensityFactors.y, num3 * _separateIntensityFactors.z) * __instance.Intensity;
-                Weapon weapon = wep;
+                __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
+
+                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str;
+                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str;
+
+                float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y * Plugin.DispMulti.Value);
+                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value;
+                float hRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value;
+                __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * _separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * _separateIntensityFactors.y, hRecoil * _separateIntensityFactors.z) * __instance.Intensity;
+                IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
-                Weapon weapon2 = wep;
+                IWeapon weapon2 = iWeapon;
                 float num4 = (weapon2 != null) ? weapon2.MalfState.OverheatBarrelMoveMult : 0f;
                 float num5 = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * num4;
                 __instance.RecoilDirection.x = __instance.RecoilDirection.x + vector.x * num5;
@@ -189,22 +236,47 @@ namespace RealismMod
             if (firearmController != null)
             {
                 Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (!player.IsAI)
+                if (player.IsYourPlayer == true)
                 {
-                    __instance.HandsContainer.Recoil.Damping = Plugin.currentDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = Plugin.currentHandDamping;
+              
+                    __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
+                    __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    if (Plugin.shotCount > 1)
+                    if (Plugin.ShotCount == 1)
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence * 0.6f;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConSemiMulti.Value;
                     }
-                    else
+                    if (Plugin.ShotCount > 1)
                     {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.currentConvergence;
+                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConAutoMulti.Value;
                     }
+
                 }
             }
         }
     }
+
+    public class SetCurveParametersPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.RecoilSpring).GetMethod("SetCurveParameters");
+        }
+        [PatchPostfix]
+        public static void PatchPostfix(EFT.Animations.RecoilSpring __instance)
+        {
+            float[] _originalKeyValues = (float[])AccessTools.Field(typeof(EFT.Animations.RecoilSpring), "_originalKeyValues").GetValue(__instance);
+
+            float value = __instance.ReturnSpeedCurve[0].value;
+            for (int i = 1; i < _originalKeyValues.Length; i++)
+            {
+                Keyframe key = __instance.ReturnSpeedCurve[i];
+                key.value = value + _originalKeyValues[i] * Plugin.ConvergenceSpeedCurve.Value;
+                __instance.ReturnSpeedCurve.RemoveKey(i);
+                __instance.ReturnSpeedCurve.AddKey(key);
+            }
+        }
+    }
+
 }
 
