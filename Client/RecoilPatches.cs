@@ -185,7 +185,7 @@ namespace RecoilStandalone
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY;
                 }
 
-                if (weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                if (Plugin.ShotCount > 1 && weaponClass.WeapClass == "pistol" && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
                     __instance.RecoilStrengthZ.x *= 0.5f;
                     __instance.RecoilStrengthZ.y *= 0.5f;
