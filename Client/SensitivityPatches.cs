@@ -59,7 +59,7 @@ namespace RecoilStandalone
             {
                 if (!(__instance.HandsController != null) || !__instance.HandsController.IsAiming)
                 {
-                    float sens = Singleton<GClass1776>.Instance.Control.Settings.MouseSensitivity;
+                    float sens = Singleton<SharedGameSettingsClass>.Instance.Control.Settings.MouseSensitivity;
                     Plugin.StartingHipSens = sens;
                     if (!Plugin.CheckedForSens)
                     {

@@ -101,7 +101,7 @@ namespace RecoilStandalone
 
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                SkillsClass.GClass1675 buffInfo = (SkillsClass.GClass1675)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                SkillsClass.GClass1678 buffInfo = (SkillsClass.GClass1678)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
                 Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
@@ -128,12 +128,12 @@ namespace RecoilStandalone
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
-                BackendConfigSettingsClass.GClass1310 Aiming = Singleton<BackendConfigSettingsClass>.Instance.Aiming;
+                BackendConfigSettingsClass.GClass1312 aiming = Singleton<BackendConfigSettingsClass>.Instance.Aiming;
 
-                Plugin.StartingDamping = (float)Math.Round(Aiming.RecoilDamping, 3);
+                Plugin.StartingDamping = (float)Math.Round(aiming.RecoilDamping, 3);
                 Plugin.CurrentDamping = Plugin.StartingDamping;
 
-                Plugin.StartingHandDamping = (float)Math.Round(Aiming.RecoilHandDamping, 3);
+                Plugin.StartingHandDamping = (float)Math.Round(aiming.RecoilHandDamping, 3);
                 Plugin.CurrentHandDamping = Plugin.StartingHandDamping;
 
             }
