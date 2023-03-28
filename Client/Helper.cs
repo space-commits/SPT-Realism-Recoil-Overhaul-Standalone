@@ -40,6 +40,10 @@ namespace RecoilStandalone
                     {
                         Helper.WeaponReady = true;
                     }
+                    else
+                    {
+                        Helper.WeaponReady = false;
+                    }
                 }
             }
 

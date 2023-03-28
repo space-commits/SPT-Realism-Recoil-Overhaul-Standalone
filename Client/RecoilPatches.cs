@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 using System;
 using static EFT.Player;
 using EFT.Interactive;
+using System.Linq;
 
 namespace RecoilStandalone
 {
@@ -162,13 +163,13 @@ namespace RecoilStandalone
 
                 Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
 
-
-                if (Plugin.ShotCount == 1)
+                if (Plugin.ShotCount == 1 && (weaponClass.WeapClass == "pistol" || weaponClass.WeapClass == "shotgun" || weaponClass.WeapClass == "marksmanRifle" || weaponClass.WeapClass == "grenadeLauncher" || (weaponClass.WeapClass == "sniperRifle" && weaponClass.BoltAction == true)))
                 {
-                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.35f;
-                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.35f;
-                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.35f;
-                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.35f;
+                    __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 1.7f;
+                    __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 1.7f;
+                    __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.7f;
+                    __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.7f;
+                    Logger.LogWarning("SHGOTSDG");
                 }
                 else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
                 {
@@ -242,11 +243,11 @@ namespace RecoilStandalone
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
-                    if (Plugin.ShotCount == 1)
+                    if (Plugin.ShotCount <= 4)
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConSemiMulti.Value;
                     }
-                    if (Plugin.ShotCount > 1)
+                    if (Plugin.ShotCount > 4)
                     {
                         __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConAutoMulti.Value;
                     }
