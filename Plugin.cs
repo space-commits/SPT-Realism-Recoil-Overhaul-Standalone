@@ -171,8 +171,6 @@ namespace RecoilStandalone
           
             SwayIntensity = Config.Bind<float>(WeaponSettings, "Sway Intensity", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
 
-
-
             new WeaponConstructorPatch().Enable();
             new GetAttributeIconPatches().Enable();
             new method_20Patch().Enable();
@@ -185,6 +183,7 @@ namespace RecoilStandalone
             new UpdateSensitivityPatch().Enable();
             new AimingSensitivityPatch().Enable();
             new GetRotationMultiplierPatch().Enable();
+            new SensPatch().Enable();
         }
 
         void Update()
