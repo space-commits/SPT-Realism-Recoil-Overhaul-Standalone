@@ -99,6 +99,10 @@ namespace RecoilStandalone
 
         public static Dictionary<Enum, Sprite> IconCache = new Dictionary<Enum, Sprite>();
 
+        public static bool FovFixIsPresent = false;
+        private static bool checkedForSensMods = false;
+
+
         private void CacheIcons()
         {
             IconCache.Add(ENewItemAttributeId.ShotDispersion, Resources.Load<Sprite>("characteristics/icons/Velocity"));
@@ -188,6 +192,13 @@ namespace RecoilStandalone
 
         void Update()
         {
+            if (!checkedForSensMods)
+            {
+                FovFixIsPresent = Chainloader.PluginInfos.ContainsKey("FOVFix") && Chainloader.PluginInfos.ContainsKey("Bridge");
+                checkedForSensMods = true;
+                Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
+            }
+
 
             if (Helper.CheckIsReady())
             {
