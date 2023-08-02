@@ -10,6 +10,9 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
+using PlayerInterface = GInterface114;
+using BuffInfo = SkillsClass.GClass1743;
+using AimingSettings = BackendConfigSettingsClass.GClass1358;
 
 namespace RecoilStandalone
 {
@@ -17,20 +20,23 @@ namespace RecoilStandalone
 
     public class method_20Patch : ModulePatch
     {
+        private static FieldInfo ginterface114Field;
+
         protected override MethodBase GetTargetMethod()
         {
+            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
+
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_20", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
+            PlayerInterface ginterface114 = (PlayerInterface)ginterface114Field.GetValue(__instance);
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                if ((weapon?.Owner?.ID != null && (weapon.Owner.ID.StartsWith("pmc") || weapon.Owner.ID.StartsWith("scav"))))
                 {
                    float swayIntensity = Plugin.SwayIntensity.Value;
                     __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
@@ -44,20 +50,23 @@ namespace RecoilStandalone
 
     public class UpdateSwayFactorsPatch : ModulePatch
     {
+        private static FieldInfo ginterface114Field;
+
         protected override MethodBase GetTargetMethod()
         {
+            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
+
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
-
-            if (firearmController != null)
+            PlayerInterface ginterface114 = (PlayerInterface)ginterface114Field.GetValue(__instance);
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true) 
+                Weapon weapon = ginterface114.Weapon;
+                if ((weapon?.Owner?.ID != null && (weapon.Owner.ID.StartsWith("pmc") || weapon.Owner.ID.StartsWith("scav"))))
                 {
                     float float_20 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").GetValue(__instance);
                     __instance.MotionReact.SwayFactors = new Vector3(float_20, __instance.IsAiming ? (float_20 * 0.3f) : float_20, float_20) * Plugin.SwayIntensity.Value;
@@ -68,21 +77,22 @@ namespace RecoilStandalone
 
     public class GetAimingPatch : ModulePatch
     {
+        private static FieldInfo playerField;
+
         protected override MethodBase GetTargetMethod()
         {
+            playerField = AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player");
+
             return typeof(EFT.Player.FirearmController).GetMethod("get_IsAiming", BindingFlags.Public | BindingFlags.Instance);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(EFT.Player.FirearmController __instance, ref bool ____isAiming)
         {
-            if (Helper.IsReady == true)
+            Player player = (Player)playerField.GetValue(__instance);
+            if (!player.IsAI)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.ItemHandsController), "_player").GetValue(__instance);
-                if (!player.IsAI)
-                {
-                    Plugin.IsAiming = ____isAiming;
-                }
+                Plugin.IsAiming = ____isAiming;
             }
         }
     }
@@ -90,20 +100,28 @@ namespace RecoilStandalone
 
     public class OnWeaponParametersChangedPatch : ModulePatch
     {
+        private static FieldInfo iWeaponField;
+        private static FieldInfo weaponClassField;
+        private static FieldInfo buffInfoField;
+
         protected override MethodBase GetTargetMethod()
         {
+            iWeaponField = AccessTools.Field(typeof(ShotEffector), "_weapon");
+            weaponClassField = AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands");
+            buffInfoField = AccessTools.Field(typeof(ShotEffector), "_buffs");
+
             return typeof(ShotEffector).GetMethod("OnWeaponParametersChanged", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref ShotEffector __instance)
         {
-            IWeapon _weapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
+            IWeapon _weapon = (IWeapon)iWeaponField.GetValue(__instance);
 
             if (_weapon.Item.Owner.ID.StartsWith("pmc") || _weapon.Item.Owner.ID.StartsWith("scav"))
             {
-                SkillsClass.GClass1680 buffInfo = (SkillsClass.GClass1680)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
-                Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
+                BuffInfo buffInfo = (BuffInfo)buffInfoField.GetValue(__instance);
+                Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
                 WeaponTemplate template = _weapon.WeaponTemplate;
 
                 Plugin.CurrentlyEquipedWeapon = weaponClass;
@@ -129,7 +147,7 @@ namespace RecoilStandalone
                 Plugin.CurrentConvergence = Plugin.StartingConvergence;
                 Plugin.ConvergenceProporitonK = (float)Math.Round(Plugin.StartingConvergence * Plugin.StartingVRecoilX, 2);
 
-                BackendConfigSettingsClass.GClass1314 aiming = Singleton<BackendConfigSettingsClass>.Instance.Aiming;
+                AimingSettings aiming = Singleton<BackendConfigSettingsClass>.Instance.Aiming;
 
                 Plugin.StartingDamping = (float)Math.Round(aiming.RecoilDamping, 3);
                 Plugin.CurrentDamping = Plugin.StartingDamping;
@@ -143,16 +161,25 @@ namespace RecoilStandalone
 
     public class ProcessPatch : ModulePatch
     {
+        private static FieldInfo iWeaponField;
+        private static FieldInfo weaponClassField;
+        private static FieldInfo intensityFactorsField;
+
         protected override MethodBase GetTargetMethod()
         {
+            iWeaponField = AccessTools.Field(typeof(ShotEffector), "_weapon");
+            weaponClassField = AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands");
+            intensityFactorsField = AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors");
+
             return typeof(ShotEffector).GetMethod("Process");
         }
+
         [PatchPrefix]
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
 
-            IWeapon iWeapon = (IWeapon)AccessTools.Field(typeof(ShotEffector), "_weapon").GetValue(__instance);
-            Weapon weaponClass = (Weapon)AccessTools.Field(typeof(ShotEffector), "_mainWeaponInHands").GetValue(__instance);
+            IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
+            Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
@@ -161,7 +188,7 @@ namespace RecoilStandalone
                 Plugin.IsFiring = true;
                 Plugin.ShotCount++;
 
-                Vector3 _separateIntensityFactors = (Vector3)AccessTools.Field(typeof(ShotEffector), "_separateIntensityFactors").GetValue(__instance);
+                Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
 
                 if (Plugin.ShotCount == 1 && (weaponClass.WeapClass == "pistol" || weaponClass.WeapClass == "shotgun" || weaponClass.WeapClass == "marksmanRifle" || weaponClass.WeapClass == "grenadeLauncher" || (weaponClass.WeapClass == "sniperRifle" && weaponClass.BoltAction == true)))
                 {
@@ -201,7 +228,7 @@ namespace RecoilStandalone
                 float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y * Plugin.DispMulti.Value);
                 float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value;
                 float hRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value;
-                __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * _separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * _separateIntensityFactors.y, hRecoil * _separateIntensityFactors.z) * __instance.Intensity;
+                __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 IWeapon weapon2 = iWeapon;
@@ -224,21 +251,25 @@ namespace RecoilStandalone
     }
     public class ShootPatch : ModulePatch
     {
+        private static FieldInfo ginterface114Field;
+
         protected override MethodBase GetTargetMethod()
         {
+            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
+
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("Shoot");
         }
+
         [PatchPostfix]
         public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            Player.FirearmController firearmController = (Player.FirearmController)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "firearmController_0").GetValue(__instance);
+            PlayerInterface ginterface114 = (PlayerInterface)ginterface114Field.GetValue(__instance);
 
-            if (firearmController != null)
+            if (ginterface114 != null && ginterface114.Weapon != null)
             {
-                Player player = (Player)AccessTools.Field(typeof(EFT.Player.FirearmController), "_player").GetValue(firearmController);
-                if (player.IsYourPlayer == true)
+                Weapon weapon = ginterface114.Weapon;
+                if (weapon.Owner.ID.StartsWith("pmc") || weapon.Owner.ID.StartsWith("scav"))
                 {
-              
                     __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
                     __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
 
