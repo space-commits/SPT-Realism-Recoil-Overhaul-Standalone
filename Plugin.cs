@@ -41,8 +41,7 @@ namespace RecoilStandalone
         public static ConfigEntry<bool> EnableRecoilClimb { get; set; }
         public static ConfigEntry<float> SwayIntensity { get; set; }
         public static ConfigEntry<float> RecoilIntensity { get; set; }
-        public static ConfigEntry<bool> EnableStatsDelta { get; set; }
-        public static ConfigEntry<bool> EnableHipfire { get; set; }
+        public static ConfigEntry<bool> EnableHipfireRecoilClimb { get; set; }
         public static ConfigEntry<float> VertMulti { get; set; }
         public static ConfigEntry<float> HorzMulti { get; set; }
         public static ConfigEntry<float> DispMulti { get; set; }
@@ -145,7 +144,7 @@ namespace RecoilStandalone
             string AdvancedRecoilSettings = "4. Advanced Recoil Settings";
             string WeaponSettings = "5. Weapon Settings";
 
-            EnableHipfire = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 10 }));
+            EnableHipfireRecoilClimb = Config.Bind<bool>(RecoilSettings, "Enable Hipfire Recoil Climb", true, new ConfigDescription("Requires Restart. Enabled Recoil Climbing While Hipfiring", null, new ConfigurationManagerAttributes { Order = 10 }));
             ReduceCamRecoil = Config.Bind<bool>(RecoilSettings, "Reduce Camera Recoil", false, new ConfigDescription("Reduces Camera Recoil Per Shot. If Disabled, Camera Recoil Becomes More Intense As Weapon Recoil Increases.", null, new ConfigurationManagerAttributes { Order = 9 }));
             SensLimit = Config.Bind<float>(RecoilSettings, "Sensitivity Lower Limit", 0.4f, new ConfigDescription("Sensitivity Lower Limit While Firing. Lower Means More Sensitivity Reduction. 100% Means No Sensitivity Reduction.", new AcceptableValueRange<float>(0.1f, 1f), new ConfigurationManagerAttributes { Order = 8 }));
             RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 7 }));
@@ -199,7 +198,6 @@ namespace RecoilStandalone
                 Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
             }
 
-
             if (Helper.CheckIsReady())
             {
 
@@ -208,7 +206,7 @@ namespace RecoilStandalone
                     Plugin.IsFiring = true;
                 }
 
-                if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfire.Value == true))
+                if (Plugin.EnableRecoilClimb.Value == true && (Plugin.IsAiming == true || Plugin.EnableHipfireRecoilClimb.Value == true))
                 {
                     Recoil.DoRecoilClimb();
                 }
