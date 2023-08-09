@@ -4,7 +4,7 @@ using EFT.InventoryLogic;
 
 namespace RecoilStandalone
 {
-    public static class Helper
+    public static class Uitls
     {
 
         public static bool ProgramKEnabled = false;
@@ -31,28 +31,25 @@ namespace RecoilStandalone
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
-            if (gameWorld?.AllAlivePlayersList.Count > 0)
+            Player player = gameWorld.MainPlayer;
+            if (player != null && player?.HandsController != null)
             {
-                Player player = gameWorld.AllAlivePlayersList[0];
-                if (player != null && player?.HandsController != null)
+                if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                 {
-                    if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
-                    {
-                        Helper.WeaponReady = true;
-                    }
-                    else
-                    {
-                        Helper.WeaponReady = false;
-                    }
+                    Uitls.WeaponReady = true;
+                }
+                else
+                {
+                    Uitls.WeaponReady = false;
                 }
             }
 
-            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.AllAlivePlayersList.Count <= 0 || sessionResultPanel != null)
+            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
             {
-                Helper.IsReady = false;
+                Uitls.IsReady = false;
                 return false;
             }
-            Helper.IsReady = true;
+            Uitls.IsReady = true;
 
             return true;
         }

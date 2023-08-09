@@ -205,7 +205,7 @@ namespace RecoilStandalone
                 Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
             }
 
-            if (Helper.CheckIsReady())
+            if (Uitls.CheckIsReady())
             {
 
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
