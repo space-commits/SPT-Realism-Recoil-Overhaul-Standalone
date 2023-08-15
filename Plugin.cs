@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Configuration;
 using Comfort.Common;
+using Diz.Jobs;
 using EFT;
 using EFT.InventoryLogic;
 using HarmonyLib;
@@ -205,7 +206,7 @@ namespace RecoilStandalone
                 Logger.LogWarning("FovFixIsPresent = " + FovFixIsPresent);
             }
 
-            if (Uitls.CheckIsReady())
+            if (Utils.CheckIsReady())
             {
 
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
@@ -230,9 +231,16 @@ namespace RecoilStandalone
                     }
                 }
 
-                if (Plugin.IsFiring == false)
+                if (!Plugin.IsFiring)
                 {
                     Recoil.ResetRecoil();
+                    Utils.ClientPlayer.ProceduralWeaponAnimation.HandsContainer.Recoil.Damping = 0.7f;
+                    Utils.ClientPlayer.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.45f;
+                }
+                else 
+                {
+                    Utils.ClientPlayer.ProceduralWeaponAnimation.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
+                    Utils.ClientPlayer.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
                 }
             }
         }
