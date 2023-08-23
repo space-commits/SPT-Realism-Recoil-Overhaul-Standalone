@@ -13,37 +13,94 @@ using System.Linq;
 using PlayerInterface = GInterface114;
 using BuffInfo = SkillsClass.GClass1743;
 using AimingSettings = BackendConfigSettingsClass.GClass1358;
+using EFT.Animations;
 
 namespace RecoilStandalone
 {
+    public class PlayerLateUpdatePatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(Player).GetMethod("LateUpdate", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(Player __instance)
+        {
+            if (Utils.CheckIsReady() == true && __instance.IsYourPlayer == true)
+            {
+                __instance.ProceduralWeaponAnimation.CrankRecoil = Plugin.EnableCrank.Value;
+
+                float mountingSwayBonus = Plugin.IsMounting ? Plugin.MountingSwayBonus : Plugin.BracingSwayBonus;
+                float mountingRecoilBonus = Plugin.IsMounting ? Plugin.MountingRecoilBonus : Plugin.BracingRecoilBonus;
+
+                __instance.ProceduralWeaponAnimation.Shootingg.Intensity = Plugin.RecoilIntensity.Value * mountingRecoilBonus;
+
+                float swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus;
+                __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity; 
+                __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
+
+                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = 0.1f;
+
+                if (Plugin.IsFiring)
+                {
+                    RecoilController.SetRecoilParams(__instance.ProceduralWeaponAnimation);
+                }
+                else if (!Plugin.CombatStancesIsPresent) 
+                {
+                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.45f;
+                }
+            }
+        }
+    }
 
 
     public class PwaWeaponParamsPatch : ModulePatch
     {
-        private static FieldInfo ginterface114Field;
-
         protected override MethodBase GetTargetMethod()
         {
-            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
-
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_21", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
         }
 
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            PlayerInterface playerInterface = (PlayerInterface)ginterface114Field.GetValue(__instance);
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+
             if (playerInterface != null && playerInterface.Weapon != null)
             {
                 Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
-                   float swayIntensity = Plugin.SwayIntensity.Value;
-                    __instance.Shootingg.Intensity = Plugin.RecoilIntensity.Value;
-                    __instance.Breath.Intensity = swayIntensity * __instance.IntensityByPoseLevel; 
-                    __instance.HandsContainer.HandsRotation.InputIntensity = (__instance.HandsContainer.HandsPosition.InputIntensity = swayIntensity * swayIntensity);
-                    __instance.CrankRecoil = Plugin.EnableCrank.Value;
+                    float swayIntensity = Plugin.SwayIntensity.Value;
+                    __instance.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
+                    __instance.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
+                }
+            }
+        }
+    }
+
+    public class UpdateWeaponVariablesPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateWeaponVariables", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPostfix]
+        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
+        {
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+
+            if (playerInterface != null && playerInterface.Weapon != null)
+            {
+                Weapon weapon = playerInterface.Weapon;
+                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
+                {
+                    Plugin.HandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
+                    Plugin.BreathIntensity = __instance.Breath.Intensity;
                 }
             }
         }
@@ -196,7 +253,7 @@ namespace RecoilStandalone
                     __instance.RecoilStrengthZ.x = Plugin.CurrentHRecoilX * 1.7f;
                     __instance.RecoilStrengthZ.y = Plugin.CurrentHRecoilY * 1.7f;
                 }
-                else if (Plugin.ShotCount > 1 && weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto)
+                else if (Plugin.ShotCount > 1 && (weaponClass.SelectedFireMode == Weapon.EFireMode.fullauto || weaponClass.SelectedFireMode == Weapon.EFireMode.burst))
                 {
                     __instance.RecoilStrengthXy.x = Plugin.CurrentVRecoilX * 0.63f;
                     __instance.RecoilStrengthXy.y = Plugin.CurrentVRecoilY * 0.63f;
@@ -215,18 +272,18 @@ namespace RecoilStandalone
                 {
                     __instance.RecoilStrengthZ.x *= 0.5f;
                     __instance.RecoilStrengthZ.y *= 0.5f;
-                    __instance.RecoilStrengthXy.x *= 0.25f;
-                    __instance.RecoilStrengthXy.y *= 0.25f;
+                    __instance.RecoilStrengthXy.x *= 0.3f;
+                    __instance.RecoilStrengthXy.y *= 0.3f;
                 }
 
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
 
-                __instance.ShotVals[3].Intensity = Plugin.CurrentCamRecoilX * str;
-                __instance.ShotVals[4].Intensity = Plugin.CurrentCamRecoilY * str;
+                __instance.ShotVals[3].Intensity =  Mathf.Min(Plugin.CurrentCamRecoilX * str, 0.2f);
+                __instance.ShotVals[4].Intensity = Mathf.Min(Plugin.CurrentCamRecoilY * str, 0.2f);
 
                 float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y * Plugin.DispMulti.Value);
                 float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value;
-                float hRecoil = Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value;
+                float hRecoil = Mathf.Min(25f ,Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value);
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 IWeapon weapon = iWeapon;
                 Vector2 vector = (weapon != null) ? weapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
@@ -270,18 +327,7 @@ namespace RecoilStandalone
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
                 {
-                    __instance.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
-                    __instance.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
-
-                    if (Plugin.ShotCount <= 4)
-                    {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConSemiMulti.Value;
-                    }
-                    if (Plugin.ShotCount > 4)
-                    {
-                        __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConAutoMulti.Value;
-                    }
-
+                   RecoilController.SetRecoilParams(__instance);
                 }
             }
         }
