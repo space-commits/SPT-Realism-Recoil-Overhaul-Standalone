@@ -4,9 +4,8 @@ using EFT.InventoryLogic;
 
 namespace RecoilStandalone
 {
-    public static class Helper
+    public static class Utils
     {
-
         public static bool ProgramKEnabled = false;
 
         public static bool IsAllowedAim = true;
@@ -25,34 +24,33 @@ namespace RecoilStandalone
 
         public static bool WeaponReady = false;
 
+        public static Player ClientPlayer;
 
         public static bool CheckIsReady()
         {
             GameWorld gameWorld = Singleton<GameWorld>.Instance;
             SessionResultPanel sessionResultPanel = Singleton<SessionResultPanel>.Instance;
 
-            if (gameWorld?.AllAlivePlayersList.Count > 0)
+            Player player = gameWorld?.MainPlayer;
+            if (player != null && player?.HandsController != null)
             {
-                Player player = gameWorld.AllAlivePlayersList[0];
-                if (player != null && player?.HandsController != null)
+                ClientPlayer = player;  
+                if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
                 {
-                    if (player?.HandsController?.Item != null && player?.HandsController?.Item is Weapon)
-                    {
-                        Helper.WeaponReady = true;
-                    }
-                    else
-                    {
-                        Helper.WeaponReady = false;
-                    }
+                    Utils.WeaponReady = true;
+                }
+                else
+                {
+                    Utils.WeaponReady = false;
                 }
             }
 
-            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.AllAlivePlayersList.Count <= 0 || sessionResultPanel != null)
+            if (gameWorld == null || gameWorld.AllAlivePlayersList == null || gameWorld.MainPlayer == null || sessionResultPanel != null)
             {
-                Helper.IsReady = false;
+                Utils.IsReady = false;
                 return false;
             }
-            Helper.IsReady = true;
+            Utils.IsReady = true;
 
             return true;
         }

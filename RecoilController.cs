@@ -1,4 +1,5 @@
-﻿using EFT.InventoryLogic;
+﻿using EFT.Animations;
+using EFT.InventoryLogic;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,29 +7,29 @@ using UnityEngine;
 
 namespace RecoilStandalone
 {
-    public class Recoil
+    public class RecoilController
     {
 
-
-        public static float ConvergenceChangeRate = 0.98f;
-        public static float ConvergenceResetRate = 1.16f;
-        public static float ConvergenceLimit = 0.3f;
-
-        public static float CamRecoilChangeRate = 0.987f;
+        public static float CamRecoilChangeRate = 0.97f;
         public static float CamRecoilResetRate = 1.17f;
         public static float CamRecoilLimit = 0.45f;
 
-        public static float VRecoilChangeRate = 1.005f;
-        public static float VRecoilResetRate = 0.91f;
-        public static float VRecoilLimit = 10;
-
-        public static float HRecoilChangeRate = 1.005f;
-        public static float HRecoilResetRate = 0.91f;
-        public static float HRecoilLimit = 10;
-
-        public static float DampingChangeRate = 0.98f;
         public static float DampingResetRate = 1.07f;
         public static float DampingLimit = 0.5f;
+
+        public static void SetRecoilParams(ProceduralWeaponAnimation pwa) 
+        {
+            pwa.HandsContainer.Recoil.Damping = Plugin.CurrentDamping;
+            pwa.HandsContainer.HandsPosition.Damping = Plugin.CurrentHandDamping;
+            if (Plugin.ShotCount <= 4)
+            {
+                pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConSemiMulti.Value;
+            }
+            if (Plugin.ShotCount > 4)
+            {
+                pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.CurrentConvergence * Plugin.ConAutoMulti.Value;
+            }
+        }
 
         private static void VRecoilClimb(float climbFactor)
         {
@@ -96,7 +97,6 @@ namespace RecoilStandalone
                     HRecoilClimb(1.045f);
                     ConvergenceClimb();
                     DampingClimb(0.98f);
-
                 }
 
                 if (Plugin.ShotCount > 15 && Plugin.ShotCount <= 20)
