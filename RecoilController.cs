@@ -16,8 +16,8 @@ namespace RecoilStandalone
         {
             if (Plugin.IsFiring)
             {
-                float recoilAmount = Plugin.TotalHRecoil / 40f;
-                float recoilSpeed = Plugin.TotalConvergence * 0.7f;
+                float recoilAmount = Plugin.TotalHRecoil / 35f;
+                float recoilSpeed = Plugin.TotalConvergence * 0.6f;
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }

@@ -129,6 +129,7 @@ namespace RecoilStandalone
             new SetCurveParametersPatch().Enable();
             new PlayerLateUpdatePatch().Enable();
             new RotatePatch().Enable();
+
             new ApplyComplexRotationPatch().Enable();
         }
 

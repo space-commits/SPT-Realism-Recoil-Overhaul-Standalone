@@ -21,28 +21,16 @@ namespace RecoilStandalone
     {
         private static FieldInfo weapRotationField;
         private static FieldInfo currentRotationField;
-        private static FieldInfo aimSpeedField;
-        private static FieldInfo fovScaleField;
         private static FieldInfo pitchField;
-        private static FieldInfo displacementStrField;
         private static FieldInfo blindfireRotationField;
-        private static FieldInfo aimingQuatField;
-        private static FieldInfo weapLocalRotationField;
-        private static FieldInfo isAimingField;
         private static PropertyInfo overlappingBlindfireField;
 
         protected override MethodBase GetTargetMethod()
         {
-            aimSpeedField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_9");
-            fovScaleField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_13");
             pitchField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14");
-            displacementStrField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_21");
             blindfireRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6");
-            aimingQuatField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_2");
-            weapLocalRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_5");
             weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6");
             currentRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1");
-            isAimingField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "bool_1");
             overlappingBlindfireField = AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
@@ -54,25 +42,29 @@ namespace RecoilStandalone
         [PatchPostfix]
         private static void Postfix(ref EFT.Animations.ProceduralWeaponAnimation __instance, float dt)
         {
-            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
-            if (playerInterface != null && playerInterface.Weapon != null)
+            if (!Plugin.CombatStancesIsPresent)
             {
-                Weapon weapon = playerInterface.Weapon;
-                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player != null && player.IsYourPlayer)
+                PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+                if (playerInterface != null && playerInterface.Weapon != null)
                 {
-                    float pitch = (float)pitchField.GetValue(__instance);
-                    float overlappingBlindfire = (float)overlappingBlindfireField.GetValue(__instance);
-                    Vector3 blindFireRotation = (Vector3)blindfireRotationField.GetValue(__instance);
-                    Quaternion currentRotation = (Quaternion)currentRotationField.GetValue(__instance);
-                    Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
+                    Weapon weapon = playerInterface.Weapon;
+                    Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
+                    if (player != null && player.IsYourPlayer)
+                    {
 
-                    Quaternion weapRotation = (Quaternion)weapRotationField.GetValue(__instance);
-                    Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
+                        float pitch = (float)pitchField.GetValue(__instance);
+                        float overlappingBlindfire = (float)overlappingBlindfireField.GetValue(__instance);
+                        Vector3 blindFireRotation = (Vector3)blindfireRotationField.GetValue(__instance);
+                        Quaternion currentRotation = (Quaternion)currentRotationField.GetValue(__instance);
+                        Vector3 weaponWorldPos = __instance.HandsContainer.WeaponRootAnim.position;
 
-                    RecoilController.DoCantedRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation);
-                    __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
+                        Quaternion weapRotation = (Quaternion)weapRotationField.GetValue(__instance);
+                        Quaternion rhs = Quaternion.Euler(pitch * overlappingBlindfire * blindFireRotation);
 
+                        RecoilController.DoCantedRecoil(ref targetRecoil, ref currentRecoil, ref weapRotation);
+                        __instance.HandsContainer.WeaponRootAnim.SetPositionAndRotation(weaponWorldPos, weapRotation * rhs * currentRotation);
+
+                    }
                 }
             }
         }
@@ -119,7 +111,7 @@ namespace RecoilStandalone
                     timer = 0f;
 
                     FirearmController fc = player.HandsController as FirearmController;
-                    float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.5f, 1.5f);
+                    float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.35f, 1.5f);
                     float angle = ((90f - Plugin.RecoilAngle) / 100f);
                     float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
@@ -206,10 +198,8 @@ namespace RecoilStandalone
                 __instance.ProceduralWeaponAnimation.Shootingg.Intensity = Plugin.RecoilIntensity.Value * mountingRecoilBonus;
 
                 float swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus;
-                __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity; 
+                __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
                 __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
-
-                __instance.ProceduralWeaponAnimation.HandsContainer.CameraRotation.ReturnSpeed = 0.1f;
 
                 if (Plugin.IsFiring)
                 {
@@ -218,33 +208,6 @@ namespace RecoilStandalone
                 else if (!Plugin.CombatStancesIsPresent) 
                 {
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.45f;
-                }
-            }
-        }
-    }
-
-
-    public class PwaWeaponParamsPatch : ModulePatch
-    {
-        protected override MethodBase GetTargetMethod()
-        {
-            return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("method_21", BindingFlags.Instance | BindingFlags.Public);
-        }
-
-        [PatchPostfix]
-        private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
-        {
-            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
-
-            if (playerInterface != null && playerInterface.Weapon != null)
-            {
-                Weapon weapon = playerInterface.Weapon;
-                Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
-                if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
-                {
-                    float swayIntensity = Plugin.SwayIntensity.Value;
-                    __instance.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
-                    __instance.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
                 }
             }
         }
@@ -348,10 +311,6 @@ namespace RecoilStandalone
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
-                Plugin.Timer = 0f;
-                Plugin.IsFiring = true;
-                Plugin.ShotCount++;
-
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
 
                 float mountingRecoilBonus = Plugin.IsMounting ? Plugin.MountingRecoilBonus : Plugin.BracingRecoilBonus;
@@ -379,16 +338,19 @@ namespace RecoilStandalone
                 __instance.RecoilDirection.x = __instance.RecoilDirection.x + heatDirection.x * totalRecoilFactor;
                 __instance.RecoilDirection.y = __instance.RecoilDirection.y + heatDirection.y * totalRecoilFactor;
                 ShotEffector.ShotVal[] shotVals = __instance.ShotVals;
+                
                 for (int i = 0; i < shotVals.Length; i++)
                 {
                     shotVals[i].Process(__instance.RecoilDirection);
                 }
+
+                Plugin.Timer = 0f;
+                Plugin.IsFiring = true;
+                Plugin.ShotCount++;
+
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
     }
     public class ShootPatch : ModulePatch
