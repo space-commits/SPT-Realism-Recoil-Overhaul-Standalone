@@ -111,7 +111,7 @@ namespace RecoilStandalone
                     timer = 0f;
 
                     FirearmController fc = player.HandsController as FirearmController;
-                    float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.35f, 1.5f);
+                    float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.4f, 1.75f);
                     float angle = ((90f - Plugin.RecoilAngle) / 100f);
                     float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
@@ -233,6 +233,12 @@ namespace RecoilStandalone
                 {
                     Plugin.HandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
                     Plugin.BreathIntensity = __instance.Breath.Intensity;
+                    float baseConvergence = playerInterface.Weapon.Template.Convergence;
+                    float classMulti = RecoilController.GetConvergenceMulti(playerInterface.Weapon);
+                    float convBaseValue = baseConvergence * classMulti;
+                    Plugin.TotalConvergence = Mathf.Min((float)Math.Round(convBaseValue * Plugin.ConvergenceMulti.Value, 2), 30f); ;
+                    __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
+                    Plugin.RecoilAngle = playerInterface.Weapon.Template.RecoilAngle;
                 }
             }
         }
@@ -313,9 +319,11 @@ namespace RecoilStandalone
             {
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
 
+                float classVMulti = RecoilController.GetVRecoilMulti(weaponClass);
+                float classCamMulti = RecoilController.GetCamRecoilMulti(weaponClass);
                 float mountingRecoilBonus = Plugin.IsMounting ? Plugin.MountingRecoilBonus : Plugin.BracingRecoilBonus;
 
-                float cameraRecoil = weaponClass.Template.CameraRecoil * Plugin.CamMulti.Value * str;
+                float cameraRecoil = weaponClass.Template.CameraRecoil * Plugin.CamMulti.Value * str * classCamMulti;
                 Plugin.TotalCameraRecoil = cameraRecoil * mountingRecoilBonus;
 
                 __instance.RecoilRadian = __instance.RecoilDegree * 0.017453292f;
@@ -324,12 +332,12 @@ namespace RecoilStandalone
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
                 float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y * Plugin.DispMulti.Value);
-                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value;
+                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti;
                 float hRecoil = Mathf.Min(25f ,Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value);
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 
                 Plugin.TotalHRecoil = hRecoil * mountingRecoilBonus;
-                Plugin.TotalVRecoil = vertRecoil * mountingRecoilBonus * (weaponClass.WeapClass == "pistol" ? 0.5f : 1f);
+                Plugin.TotalVRecoil = vertRecoil * mountingRecoilBonus;
                 Plugin.TotalDispersion = weaponClass.Template.RecolDispersion * mountingRecoilBonus;
 
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
