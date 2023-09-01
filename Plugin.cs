@@ -73,6 +73,8 @@ namespace RecoilStandalone
         public static float BracingRecoilBonus = 1f;
         public static bool IsMounting = false;
 
+        public static bool HasStock = false;
+
         public static float Timer = 0.0f;
         public static bool IsAiming;
 
@@ -85,39 +87,42 @@ namespace RecoilStandalone
         private static bool checkedForOtherMods = false;
         private static bool warnedUser = false;
 
+        public static bool IsVector = false;
+
         void Awake()
         {
             string testing = "0. Testing";
-            string RecoilSettings = "1. Recoil Settings";
-            string AdvancedRecoilSettings = "2. Advanced Recoil Settings";
-            string WeaponSettings = "3. Weapon Settings";
+            string RecoilClimbSettings = "1. Recoil Climb Settings";
+            string RecoilSettings = "2. Recoil Settings";
+            string AdvancedRecoilSettings = "3. Advanced Recoil Settings";
+            string WeaponSettings = "4. Weapon Settings";
 
             test1 = Config.Bind<float>(testing, "test 1", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 600, IsAdvanced = true }));
             test2 = Config.Bind<float>(testing, "test 2", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 500, IsAdvanced = true }));
             test3 = Config.Bind<float>(testing, "test 3", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 400, IsAdvanced = true }));
             test4 = Config.Bind<float>(testing, "test 4", 1f, new ConfigDescription("", new AcceptableValueRange<float>(-5000f, 5000f), new ConfigurationManagerAttributes { Order = 300, IsAdvanced = true }));
 
-            RecoilSmoothness = Config.Bind<float>(RecoilSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 130 }));
-            ResetSpeed = Config.Bind<float>(RecoilSettings, "Reset Speed", 0.005f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 120 }));
-            RecoilClimbFactor = Config.Bind<float>(RecoilSettings, "Recoil Climb Multi", 0.2f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 110 }));
-            ResetSensitivity = Config.Bind<float>(RecoilSettings, "Reset Sensitvity", 0.15f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 100 }));
-            ResetVertical = Config.Bind<bool>(RecoilSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 90 }));
-            ResetHorizontal = Config.Bind<bool>(RecoilSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 80 }));
-            RecoilDispersionFactor = Config.Bind<float>(RecoilSettings, "Recoil Dispersion Multi", 0.01f, new ConfigDescription("Increases The Size The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 70 }));
-            RecoilDispersionSpeed = Config.Bind<float>(RecoilSettings, "Recoil Dispersion Speed", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60 }));
+            ResetVertical = Config.Bind<bool>(RecoilClimbSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80 }));
+            ResetHorizontal = Config.Bind<bool>(RecoilClimbSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70 }));
+            ResetSpeed = Config.Bind<float>(RecoilClimbSettings, "Reset Speed", 0.003f, new ConfigDescription("How Fast The Weapon's Vertical Position Resets After Firing. Weapon's Convergence Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 60 }));
+            ResetSensitivity = Config.Bind<float>(RecoilClimbSettings, "Reset Sensitvity", 0.15f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
+            RecoilSmoothness = Config.Bind<float>(RecoilClimbSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
+            RecoilClimbFactor = Config.Bind<float>(RecoilClimbSettings, "Recoil Climb Multi", 0.2f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            RecoilDispersionFactor = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Multi", 0.01f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            RecoilDispersionSpeed = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
 
-            RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
-            VertMulti = Config.Bind<float>(RecoilSettings, "Vertical Recoil Multi.", 0.55f, new ConfigDescription("Up/Down.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40 }));
-            HorzMulti = Config.Bind<float>(RecoilSettings, "Horizontal Recoil Multi", 1.0f, new ConfigDescription("Forward/Back.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
-            DispMulti = Config.Bind<float>(RecoilSettings, "Dispersion Recoil Multi", 1.0f, new ConfigDescription("Spread.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
-            CamMulti = Config.Bind<float>(RecoilSettings, "Camera Recoil Multi", 1f, new ConfigDescription("Visual Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
-            ConvergenceMulti = Config.Bind<float>(RecoilSettings, "Convergence Multi", 15f, new ConfigDescription("Higher = Snappier Recoil, Faster Reset.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1 }));
+            RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
+            VertMulti = Config.Bind<float>(RecoilSettings, "Vertical Recoil Multi.", 0.55f, new ConfigDescription("Up/Down. Will Also Increase Recoil Climb.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40 }));
+            HorzMulti = Config.Bind<float>(RecoilSettings, "Horizontal Recoil Multi", 1.0f, new ConfigDescription("Forward/Back. Will Also Increase Weapon Shake While Firing.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            DispMulti = Config.Bind<float>(RecoilSettings, "Dispersion Recoil Multi", 1.0f, new ConfigDescription("Spread. Will Also Increase S-Pattern Size.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            CamMulti = Config.Bind<float>(RecoilSettings, "Camera Recoil Multi", 1f, new ConfigDescription("Visual Camera Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
+            ConvergenceMulti = Config.Bind<float>(RecoilSettings, "Convergence Multi", 15f, new ConfigDescription("Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1 }));
              
             ConvergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 1f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { Order = 100 }));
             ResetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Recoil Will Not Reset Until It Is Over.", new AcceptableValueRange<float>(0.1f, 0.5f), new ConfigurationManagerAttributes { Order = 10 }));
             EnableCrank = Config.Bind<bool>(AdvancedRecoilSettings, "Rearward Recoil", true, new ConfigDescription("Makes Recoil Go Towards Player's Shoulder Instead Of Forward.", null, new ConfigurationManagerAttributes { Order = 3 }));
-            HandsDamping = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Wiggle", 0.7f, new ConfigDescription("The Amount Of Wiggle After Firing.", new AcceptableValueRange<float>(0.2f, 0.9f), new ConfigurationManagerAttributes { Order = 1 }));
-            RecoilDamping = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Wiggle", 0.7f, new ConfigDescription("The Amount Of Wiggle After Firing.", new AcceptableValueRange<float>(0.2f, 0.9f), new ConfigurationManagerAttributes { Order = 2 }));
+            HandsDamping = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Wiggle", 0.7f, new ConfigDescription("The Amount Of Rearward Wiggle After Firing.", new AcceptableValueRange<float>(0.2f, 0.9f), new ConfigurationManagerAttributes { Order = 1 }));
+            RecoilDamping = Config.Bind<float>(AdvancedRecoilSettings, "Vertical Recoil Wiggle", 0.7f, new ConfigDescription("The Amount Of Vertical Wiggle After Firing.", new AcceptableValueRange<float>(0.2f, 0.9f), new ConfigurationManagerAttributes { Order = 2 }));
            
             SwayIntensity = Config.Bind<float>(WeaponSettings, "Sway Intensity", 1f, new ConfigDescription("Changes The Intensity Of Aim Sway And Inertia.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 1 }));
 
@@ -129,7 +134,6 @@ namespace RecoilStandalone
             new SetCurveParametersPatch().Enable();
             new PlayerLateUpdatePatch().Enable();
             new RotatePatch().Enable();
-
             new ApplyComplexRotationPatch().Enable();
         }
 

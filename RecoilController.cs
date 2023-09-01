@@ -13,24 +13,51 @@ namespace RecoilStandalone
 
     public class RecoilController
     {
+        public static float GetRecoilAngle(Weapon weap)
+        {
+            switch (weap.WeapClass)
+            {
+                case "pistol":
+                    return 95f;
+                case "shotgun":
+                    return 65f;
+                case "sniperRifle":
+                    if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto) && weap.Template.BoltAction)
+                    {
+                        return 70f;
+                    }
+                    return 75f;
+                case "marksmanRifle":
+                    return 75f;
+                default:
+                    return 85;
+            }
+        }
+
         public static float GetConvergenceMulti(Weapon weap) 
         {
            switch (weap.WeapClass)
             {
+                case "smg":
+                    return 1.25f;
                 case "pistol":
                     if (weap.Template.Convergence >= 4)
                     {
-                        return 0.5f;
+                        return 0.25f;
                     }
                     return 1f;
                 case "shotgun":
                     return 0.25f;
                 case "sniperRifle":
-                    return 0.25f;
+                    if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto) && weap.Template.BoltAction)
+                    {
+                        return 0.25f;
+                    }
+                    return 1f;
                 case "marksmanRifle":
                     if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto)) 
                     {
-                        return 0.5f;
+                        return 0.9f;
                     }
                     return 1f;
                 default:
@@ -42,12 +69,18 @@ namespace RecoilStandalone
         {
             switch (weap.WeapClass)
             {
+                case "smg":
+                    return 0.65f;
                 case "pistol":
                     return 0.5f;
                 case "shotgun":
                     return 2f;
                 case "sniperRifle":
-                    return 1.5f;
+                    if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto) && weap.Template.BoltAction)
+                    {
+                        return 1.65f;
+                    }
+                    return 1f;
                 case "marksmanRifle":
                     if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto))
                     {
@@ -63,14 +96,16 @@ namespace RecoilStandalone
         {
             switch (weap.WeapClass)
             {
+                case "pistol":
+                    return 0.5f;
                 case "shotgun":
-                    return 1f;
+                    return 0.8f;
                 case "sniperRifle":
-                    return 1f;
+                    return 1.1f;
                 case "marksmanRifle":
                     if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto))
                     {
-                        return 1f;
+                        return 1.1f;
                     }
                     return 1f;
                 default:
@@ -83,7 +118,7 @@ namespace RecoilStandalone
             if (Plugin.IsFiring)
             {
                 float recoilAmount = Plugin.TotalHRecoil / 35f;
-                float recoilSpeed = Plugin.TotalConvergence * 0.6f;
+                float recoilSpeed = Plugin.TotalConvergence * 0.85f;
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }
@@ -97,11 +132,11 @@ namespace RecoilStandalone
             weapRotation *= recoilQ;
         }
 
-        public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weap) 
+        public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weap, bool isMoving) 
         {
             pwa.HandsContainer.Recoil.Damping = (float)Math.Round(Plugin.RecoilDamping.Value, 3);
-            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(Plugin.HandsDamping.Value, 3);
             pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
+            pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(Plugin.HandsDamping.Value * (isMoving ? 0.5f : 1f) , 3);
         }
     }
 }
