@@ -105,8 +105,14 @@ namespace RecoilStandalone
             {
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
+                //restet is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
+                bool canResetVert
+                bool canResetHorz
+
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
+                    Plugin.PlayerControl += deltaRotation.y * 20f;
+
                     hasReset = false;
                     timer = 0f;
 
@@ -142,7 +148,8 @@ namespace RecoilStandalone
 
                     targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
 
-                    if ((Plugin.ResetVertical.Value && (MovementContext.Rotation.y > recordedRotation.y + 1f || deltaRotation.y <= -1f)) || (Plugin.ResetHorizontal.Value && (MovementContext.Rotation.x > recordedRotation.x + 1f || deltaRotation.x <= -1f)))
+
+                    if ((Plugin.HasStock && Plugin.ResetVertical.Value && (MovementContext.Rotation.y > recordedRotation.y + 0.8f || deltaRotation.y <= -0.8f)) || (Plugin.HasStock && Plugin.ResetHorizontal.Value && (MovementContext.Rotation.x > recordedRotation.x + 0.8f || deltaRotation.x <= -0.8f)))
                     {
                         recordedRotation = MovementContext.Rotation;
                     }
@@ -154,7 +161,7 @@ namespace RecoilStandalone
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
-                    if (Plugin.ResetVertical.Value && Plugin.ResetHorizontal.Value && xIsBelowThreshold && yIsBelowThreshold)
+                    if (Plugin.HasStock && Plugin.ResetVertical.Value && Plugin.ResetHorizontal.Value && xIsBelowThreshold && yIsBelowThreshold)
                     {
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
                     }
@@ -162,7 +169,7 @@ namespace RecoilStandalone
                     {
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
                     }
-                    else if (Plugin.ResetVertical.Value && yIsBelowThreshold)
+                    else if (Plugin.HasStock && Plugin.ResetVertical.Value && yIsBelowThreshold)
                     {
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
                     }
@@ -176,6 +183,7 @@ namespace RecoilStandalone
                 else if (!Plugin.IsFiring)
                 {
                     recordedRotation = MovementContext.Rotation;
+                    Plugin.PlayerControl = 0f;
                 }
                 if (Plugin.IsFiring)
                 {
@@ -249,19 +257,28 @@ namespace RecoilStandalone
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
+                    bool hasStockMod = false;
+                    foreach (Mod mod in weapon.Mods) 
+                    {
+                        if (mod is StockItemClass) 
+                        {
+                            hasStockMod = true;
+                        }
+                    }
+
+                    Plugin.HasStock = !__instance._shouldMoveWeaponCloser && hasStockMod;
                     Plugin.HandsIntensity = __instance.HandsContainer.HandsRotation.InputIntensity;
                     Plugin.BreathIntensity = __instance.Breath.Intensity;
                     float baseConvergence = weapon.Template.Convergence;
                     float classMulti = RecoilController.GetConvergenceMulti(weapon);
-                    float stockMulti = __instance._shouldMoveWeaponCloser ? 0.1f : 1f;
-                    float convBaseValue = baseConvergence * classMulti * stockMulti;
-                    Plugin.TotalConvergence = Mathf.Min((float)Math.Round(convBaseValue * Plugin.ConvergenceMulti.Value, 2), 30f);
+
+                    float convBaseValue = baseConvergence * classMulti; 
+                    float convergenceMulti = !Plugin.HasStock && Plugin.EnableHybridRecoil.Value ? Plugin.ConvergenceMulti.Value / 1.85f : Plugin.ConvergenceMulti.Value;
+                    Plugin.TotalConvergence = Mathf.Min((float)Math.Round(convBaseValue * convergenceMulti, 2), 30f);
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
                     Plugin.RecoilAngle = RecoilController.GetRecoilAngle(weapon);
                     Plugin.IsVector = weapon.TemplateId == "5fb64bc92b1b027b1f50bcf2" || weapon.TemplateId == "5fc3f2d5900b1d5091531e57";
-                    Plugin.HasStock = __instance._shouldMoveWeaponCloser;
-
-                    Logger.LogWarning(__instance._shouldMoveWeaponCloser);
+                    Logger.LogWarning("stock? " + Plugin.HasStock);
                 }
             }
         }

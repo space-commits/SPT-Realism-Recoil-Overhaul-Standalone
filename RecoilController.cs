@@ -135,7 +135,16 @@ namespace RecoilStandalone
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weap, bool isMoving) 
         {
             pwa.HandsContainer.Recoil.Damping = (float)Math.Round(Plugin.RecoilDamping.Value, 3);
-            pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
+            
+            //if hybrid for all is enabled OR if just hybrid is enabled + for all is false + is pistol or folded stock/stockless
+            if ()
+            {
+                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((Plugin.TotalConvergence - (25f + Plugin.ShotCount)) + Mathf.Clamp(15f + Plugin.PlayerControl, 0f, 35f), 2f, Plugin.TotalConvergence);
+            }
+            else 
+            {
+                pwa.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
+            }
             pwa.HandsContainer.HandsPosition.Damping = (float)Math.Round(Plugin.HandsDamping.Value * (isMoving ? 0.5f : 1f) , 3);
         }
     }
