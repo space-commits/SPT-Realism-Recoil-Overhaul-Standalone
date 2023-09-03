@@ -136,10 +136,9 @@ namespace RecoilStandalone
         {
             pwa.HandsContainer.Recoil.Damping = (float)Math.Round(Plugin.RecoilDamping.Value, 3);
             
-            //if hybrid for all is enabled OR if just hybrid is enabled + for all is false + is pistol or folded stock/stockless
-            if ()
+            if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !Plugin.HasStock)))
             {
-                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((Plugin.TotalConvergence - (25f + Plugin.ShotCount)) + Mathf.Clamp(15f + Plugin.PlayerControl, 0f, 35f), 2f, Plugin.TotalConvergence);
+                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((Plugin.TotalConvergence - Mathf.Clamp(25f + Plugin.ShotCount, 0, 50f)) + Mathf.Clamp(15f + Plugin.PlayerControl, 0f, 50f), 2f, Plugin.TotalConvergence);
             }
             else 
             {

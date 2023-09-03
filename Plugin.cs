@@ -43,8 +43,11 @@ namespace RecoilStandalone
         public static ConfigEntry<float> ResetSensitivity { get; set; }
         public static ConfigEntry<bool> ResetVertical { get; set; }
         public static ConfigEntry<bool> ResetHorizontal { get; set; }
+        public static ConfigEntry<float> RecoilClimbLimit { get; set; }
+        public static ConfigEntry<float> PlayerControlMulti { get; set; }
 
         public static ConfigEntry<bool> EnableHybridRecoil { get; set; }
+        public static ConfigEntry<bool> EnableHybridReset { get; set; }
         public static ConfigEntry<bool> HybridForAll { get; set; }
 
         public static ConfigEntry<float> test1 { get; set; }
@@ -109,6 +112,8 @@ namespace RecoilStandalone
 
             EnableHybridRecoil = Config.Bind<bool>(RecoilClimbSettings, "Enable Hybrid Recoil System", true, new ConfigDescription("Combines Steady Recoil Climb With Auto-Compensation. If You Do Not Attempt To Control Recoil, Auto-Compensation Will Decrease Resulting In More Muzzle Flip. If You Control The Recoil, Auto-Comp Increases And Muzzle Flip Decreases.", null, new ConfigurationManagerAttributes { Order = 100 }));
             HybridForAll = Config.Bind<bool>(RecoilClimbSettings, "Enable Hybrid Recoil For All Weapons", false, new ConfigDescription("By Default This Hybrid System Is Only Enabled For Pistols And Stockless/Folded Stocked Weapons.", null, new ConfigurationManagerAttributes { Order = 90 }));
+            EnableHybridReset = Config.Bind<bool>(RecoilClimbSettings, "Enable Recoil Reset For Hybrid Recoil", false, new ConfigDescription("Enables Recoil Reset For Pistols And Stockless/Folded Stocked Weapons If Using Hybrid Recoil And If Reset Option Is Enabled.", null, new ConfigurationManagerAttributes { Order = 90 }));
+            PlayerControlMulti = Config.Bind<float>(RecoilClimbSettings, "Player Control Strength", 40f, new ConfigDescription("How Quickly The Weapon Responds To Mouse Input If Using The Hybrid Recoil System.", new AcceptableValueRange<float>(0f, 200f), new ConfigurationManagerAttributes { Order = 85 }));
 
             ResetVertical = Config.Bind<bool>(RecoilClimbSettings, "Enable Vertical Reset", true, new ConfigDescription("Enables Weapon Reseting Back To Original Vertical Position.", null, new ConfigurationManagerAttributes { Order = 80 }));
             ResetHorizontal = Config.Bind<bool>(RecoilClimbSettings, "Enable Horizontal Reset", false, new ConfigDescription("Enables Weapon Reseting Back To Original Horizontal Position.", null, new ConfigurationManagerAttributes { Order = 70 }));
@@ -116,6 +121,7 @@ namespace RecoilStandalone
             ResetSensitivity = Config.Bind<float>(RecoilClimbSettings, "Reset Sensitvity", 0.15f, new ConfigDescription("The Amount Of Mouse Movement After Firing Needed To Cancel Reseting Back To Weapon's Original Position.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
             RecoilSmoothness = Config.Bind<float>(RecoilClimbSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
             RecoilClimbFactor = Config.Bind<float>(RecoilClimbSettings, "Recoil Climb Multi", 0.2f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
+            RecoilClimbLimit = Config.Bind<float>(RecoilClimbSettings, "Recoil Climb Limit", 10f, new ConfigDescription("How Far Recoil Can Climb.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { Order = 25 }));
             RecoilDispersionFactor = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Multi", 0.01f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
             RecoilDispersionSpeed = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
 

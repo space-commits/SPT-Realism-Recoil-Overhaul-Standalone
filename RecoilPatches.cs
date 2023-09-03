@@ -106,12 +106,13 @@ namespace RecoilStandalone
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
                 //restet is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
-                bool canResetVert
-                bool canResetHorz
+                bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !Plugin.HasStock && !Plugin.EnableHybridReset.Value;
+                bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
+                bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
 
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
-                    Plugin.PlayerControl += deltaRotation.y * 20f;
+                    Plugin.PlayerControl += deltaRotation.y * Plugin.PlayerControlMulti.Value;
 
                     hasReset = false;
                     timer = 0f;
@@ -136,8 +137,8 @@ namespace RecoilStandalone
                         //spiral + pingpong, would work well as vector recoil
                         spiralTime += Time.deltaTime * 20f;
                         float recoilAmount = Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor ;
-                        yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f));
                         xRotation = Mathf.Sin(spiralTime * 10f) * 1f;
+                        yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)); 
                     }
 
                     //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
@@ -148,8 +149,7 @@ namespace RecoilStandalone
 
                     targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
 
-
-                    if ((Plugin.HasStock && Plugin.ResetVertical.Value && (MovementContext.Rotation.y > recordedRotation.y + 0.8f || deltaRotation.y <= -0.8f)) || (Plugin.HasStock && Plugin.ResetHorizontal.Value && (MovementContext.Rotation.x > recordedRotation.x + 0.8f || deltaRotation.x <= -0.8f)))
+                    if ((canResetVert && (MovementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) <= 1f))
                     {
                         recordedRotation = MovementContext.Rotation;
                     }
@@ -161,21 +161,27 @@ namespace RecoilStandalone
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
-                    if (Plugin.HasStock && Plugin.ResetVertical.Value && Plugin.ResetHorizontal.Value && xIsBelowThreshold && yIsBelowThreshold)
+/*                    Vector2 resetTarget = MovementContext.Rotation;
+*/
+                    if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
                     {
+                    /*    resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);*/
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
                     }
-                    else if (Plugin.ResetHorizontal.Value && xIsBelowThreshold)
+                    else if (canResetHorz && xIsBelowThreshold)
                     {
+                       /* resetTarget = new Vector2(recordedRotation.x, MovementContext.Rotation.y);*/
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
                     }
-                    else if (Plugin.HasStock && Plugin.ResetVertical.Value && yIsBelowThreshold)
+                    else if (canResetVert && yIsBelowThreshold)
                     {
+          /*              resetTarget = new Vector2(MovementContext.Rotation.x, recordedRotation.y);*/
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
                     }
                     else
                     {
-                        recordedRotation = MovementContext.Rotation;
+/*                        resetTarget = MovementContext.Rotation;
+*/                        recordedRotation = MovementContext.Rotation;
                     }
 
                     resetTimer(new Vector2(MovementContext.Rotation.x, recordedRotation.y), MovementContext.Rotation);
@@ -187,6 +193,11 @@ namespace RecoilStandalone
                 }
                 if (Plugin.IsFiring)
                 {
+                    if (targetRotation.y >= recordedRotation.y - Plugin.RecoilClimbLimit.Value) 
+                    {
+                        targetRotation.y = MovementContext.Rotation.y;
+                    }
+
                     MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
             }
@@ -273,12 +284,11 @@ namespace RecoilStandalone
                     float classMulti = RecoilController.GetConvergenceMulti(weapon);
 
                     float convBaseValue = baseConvergence * classMulti; 
-                    float convergenceMulti = !Plugin.HasStock && Plugin.EnableHybridRecoil.Value ? Plugin.ConvergenceMulti.Value / 1.85f : Plugin.ConvergenceMulti.Value;
+                    float convergenceMulti = Plugin.EnableHybridRecoil.Value && !Plugin.HasStock  ? Plugin.ConvergenceMulti.Value / 1.85f : Plugin.EnableHybridRecoil.Value && Plugin.HybridForAll.Value ? Plugin.ConvergenceMulti.Value / 1.4f : Plugin.ConvergenceMulti.Value;
                     Plugin.TotalConvergence = Mathf.Min((float)Math.Round(convBaseValue * convergenceMulti, 2), 30f);
                     __instance.HandsContainer.Recoil.ReturnSpeed = Plugin.TotalConvergence;
                     Plugin.RecoilAngle = RecoilController.GetRecoilAngle(weapon);
                     Plugin.IsVector = weapon.TemplateId == "5fb64bc92b1b027b1f50bcf2" || weapon.TemplateId == "5fc3f2d5900b1d5091531e57";
-                    Logger.LogWarning("stock? " + Plugin.HasStock);
                 }
             }
         }
