@@ -70,9 +70,9 @@ namespace RecoilStandalone
             switch (weap.WeapClass)
             {
                 case "smg":
-                    return 0.65f;
+                    return 0.75f;
                 case "pistol":
-                    return 0.5f;
+                    return 0.8f;
                 case "shotgun":
                     return 2f;
                 case "sniperRifle":
@@ -118,7 +118,7 @@ namespace RecoilStandalone
             if (Plugin.IsFiring)
             {
                 float recoilAmount = Plugin.TotalHRecoil / 35f;
-                float recoilSpeed = Plugin.TotalConvergence * 0.85f;
+                float recoilSpeed = Plugin.TotalConvergence * 0.75f;
                 float totalRecoil = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * recoilSpeed, 1.0f));
                 targetRecoil = new Vector3(0f, totalRecoil, 0f);
             }

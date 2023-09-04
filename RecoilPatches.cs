@@ -89,7 +89,8 @@ namespace RecoilStandalone
         {
             timer += Time.deltaTime;
 
-            if (timer >= resetTime && target == current)
+            bool doHybridReset = (Plugin.EnableHybridRecoil.Value && !Plugin.HasStock) || (Plugin.EnableHybridRecoil.Value && Plugin.HybridForAll.Value);
+            if ((doHybridReset && timer >= Plugin.test3.Value && target == current) || (!doHybridReset && (timer >= Plugin.test3.Value || target == current)))
             {
                 hasReset = true;
             }
@@ -110,6 +111,7 @@ namespace RecoilStandalone
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
 
+
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
                     Plugin.PlayerControl += deltaRotation.y * Plugin.PlayerControlMulti.Value;
@@ -129,7 +131,7 @@ namespace RecoilStandalone
                     //S pattern
                     if (!Plugin.IsVector)
                     {
-                        xRotation = Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
+                        xRotation = Mathf.Lerp(-dispersion * 1.1f, dispersion * 1.1f, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
                         yRotation = Mathf.Min(-Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f);
                     }
                     else 
@@ -149,10 +151,11 @@ namespace RecoilStandalone
 
                     targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
 
-                    if ((canResetVert && (MovementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) <= 1f))
+                    if ((canResetVert && (MovementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
                     {
                         recordedRotation = MovementContext.Rotation;
                     }
+
                 }
                 else if (!hasReset && !Plugin.IsFiring)
                 {
@@ -161,30 +164,30 @@ namespace RecoilStandalone
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
-/*                    Vector2 resetTarget = MovementContext.Rotation;
-*/
+                    Vector2 resetTarget = MovementContext.Rotation;
+
                     if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
                     {
-                    /*    resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);*/
+                        resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
                     }
                     else if (canResetHorz && xIsBelowThreshold)
                     {
-                       /* resetTarget = new Vector2(recordedRotation.x, MovementContext.Rotation.y);*/
+                        resetTarget = new Vector2(recordedRotation.x, MovementContext.Rotation.y);
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
                     }
                     else if (canResetVert && yIsBelowThreshold)
                     {
-          /*              resetTarget = new Vector2(MovementContext.Rotation.x, recordedRotation.y);*/
+                        resetTarget = new Vector2(MovementContext.Rotation.x, recordedRotation.y);
                         MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
                     }
                     else
                     {
-/*                        resetTarget = MovementContext.Rotation;
-*/                        recordedRotation = MovementContext.Rotation;
+                        resetTarget = MovementContext.Rotation;
+                        recordedRotation = MovementContext.Rotation;
                     }
 
-                    resetTimer(new Vector2(MovementContext.Rotation.x, recordedRotation.y), MovementContext.Rotation);
+                    resetTimer(resetTarget, MovementContext.Rotation);
                 }
                 else if (!Plugin.IsFiring)
                 {
@@ -193,7 +196,7 @@ namespace RecoilStandalone
                 }
                 if (Plugin.IsFiring)
                 {
-                    if (targetRotation.y >= recordedRotation.y - Plugin.RecoilClimbLimit.Value) 
+                    if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
                         targetRotation.y = MovementContext.Rotation.y;
                     }
