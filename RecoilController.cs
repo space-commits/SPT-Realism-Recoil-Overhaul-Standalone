@@ -70,9 +70,9 @@ namespace RecoilStandalone
             switch (weap.WeapClass)
             {
                 case "smg":
-                    return 0.75f;
+                    return 1f;
                 case "pistol":
-                    return 0.8f;
+                    return 0.65f;
                 case "shotgun":
                     return 2f;
                 case "sniperRifle":
@@ -138,7 +138,7 @@ namespace RecoilStandalone
             
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !Plugin.HasStock)))
             {
-                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((Plugin.TotalConvergence - Mathf.Clamp(25f + Plugin.ShotCount, 0, 50f)) + Mathf.Clamp(15f + Plugin.PlayerControl, 0f, 50f), 2f, Plugin.TotalConvergence);
+                pwa.HandsContainer.Recoil.ReturnSpeed = Mathf.Clamp((Plugin.TotalConvergence - Mathf.Clamp(25f + Plugin.ShotCount, 0, 100f)) + Mathf.Clamp(15f + Plugin.PlayerControl, 0f, 100f), 2f, Plugin.TotalConvergence);
             }
             else 
             {

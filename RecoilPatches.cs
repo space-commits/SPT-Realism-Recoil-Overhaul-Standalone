@@ -72,6 +72,9 @@ namespace RecoilStandalone
 
     public class RotatePatch : ModulePatch
     {
+        private static FieldInfo movementContextField;
+        private static FieldInfo playerField;
+
         private static Vector2 recordedRotation = Vector3.zero;
         private static Vector2 targetRotation = Vector3.zero;
         private static bool hasReset = false;
@@ -82,6 +85,9 @@ namespace RecoilStandalone
 
         protected override MethodBase GetTargetMethod()
         {
+            movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
+            playerField = AccessTools.Field(typeof(GClass1667), "player_0");
+
             return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
         }
 
@@ -90,17 +96,17 @@ namespace RecoilStandalone
             timer += Time.deltaTime;
 
             bool doHybridReset = (Plugin.EnableHybridRecoil.Value && !Plugin.HasStock) || (Plugin.EnableHybridRecoil.Value && Plugin.HybridForAll.Value);
-            if ((doHybridReset && timer >= Plugin.test3.Value && target == current) || (!doHybridReset && (timer >= Plugin.test3.Value || target == current)))
+            if ((doHybridReset && timer >= resetTime && target == current) || (!doHybridReset && (timer >= resetTime || target == current)))
             {
                 hasReset = true;
             }
         }
 
         [PatchPrefix]
-        private static bool Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
+        private static void Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
         {
-            GClass1667 MovementContext = (GClass1667)AccessTools.Field(typeof(MovementState), "MovementContext").GetValue(__instance);
-            Player player = (Player)AccessTools.Field(typeof(GClass1667), "player_0").GetValue(MovementContext);
+            GClass1667 MovementContext = (GClass1667)movementContextField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(MovementContext);
 
             if (player.IsYourPlayer)
             {
@@ -114,7 +120,8 @@ namespace RecoilStandalone
 
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
-                    Plugin.PlayerControl += deltaRotation.y * Plugin.PlayerControlMulti.Value;
+                    float controlFactor = Plugin.ShotCount <= 2f ? Plugin.PlayerControlMulti.Value * 3 : Plugin.PlayerControlMulti.Value;
+                    Plugin.PlayerControl += Mathf.Abs(deltaRotation.y) * controlFactor;
 
                     hasReset = false;
                     timer = 0f;
@@ -191,8 +198,16 @@ namespace RecoilStandalone
                 }
                 else if (!Plugin.IsFiring)
                 {
+                    if (Mathf.Abs(deltaRotation.y) > 0.1f)
+                    {
+                        Plugin.PlayerControl += Mathf.Abs(deltaRotation.y) * Plugin.PlayerControlMulti.Value;
+                    }
+                    else 
+                    {
+                        Plugin.PlayerControl = 0f;
+                    }
+
                     recordedRotation = MovementContext.Rotation;
-                    Plugin.PlayerControl = 0f;
                 }
                 if (Plugin.IsFiring)
                 {
@@ -203,8 +218,12 @@ namespace RecoilStandalone
 
                     MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
+
+                if (Plugin.ShotCount == Plugin.PrevShotCount)
+                {
+                    Plugin.PlayerControl = Mathf.Lerp(Plugin.PlayerControl, 0f, 0.05f);
+                }
             }
-            return true;
         }
     }
 
@@ -391,7 +410,7 @@ namespace RecoilStandalone
                 
                 Plugin.TotalHRecoil = hRecoil * mountingRecoilBonus;
                 Plugin.TotalVRecoil = vertRecoil * mountingRecoilBonus;
-                Plugin.TotalDispersion = weaponClass.Template.RecolDispersion * mountingRecoilBonus;
+                Plugin.TotalDispersion = weaponClass.Template.RecolDispersion * mountingRecoilBonus * (1f + weaponClass.RecoilDelta);
 
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
