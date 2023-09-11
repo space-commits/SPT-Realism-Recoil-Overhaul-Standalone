@@ -56,6 +56,10 @@ namespace RecoilStandalone
         public static ConfigEntry<float> test4 { get; set; }
 
         public static bool IsFiring = false;
+        public static float FiringTimer = 0.0f;
+        public static bool IsFiringWiggle = false;
+        public static float WiggleTimer = 0.0f;
+
         public static int ShotCount = 0;
         public static int PrevShotCount = ShotCount;
         public static bool StatsAreReset;
@@ -81,7 +85,7 @@ namespace RecoilStandalone
 
         public static bool HasStock = false;
 
-        public static float Timer = 0.0f;
+
         public static bool IsAiming;
 
         public static bool LauncherIsActive = false;
@@ -149,6 +153,7 @@ namespace RecoilStandalone
             new PlayerLateUpdatePatch().Enable();
             new RotatePatch().Enable();
             new ApplyComplexRotationPatch().Enable();
+            new BreathProcessPatch().Enable();  
         }
 
         void Update()
@@ -190,18 +195,25 @@ namespace RecoilStandalone
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
                     Plugin.IsFiring = true;
+                    Plugin.IsFiringWiggle = true;
                     Plugin.PrevShotCount = Plugin.ShotCount;
                 }
 
                 if (Plugin.ShotCount == Plugin.PrevShotCount)
                 {
-                    Plugin.Timer += Time.deltaTime;
-                    if (Plugin.Timer >= Plugin.ResetTime.Value)
+                    Plugin.FiringTimer += Time.deltaTime;
+                    Plugin.WiggleTimer += Time.deltaTime;
+                    if (Plugin.FiringTimer >= Plugin.ResetTime.Value)
                     {
                         Plugin.IsFiring = false;
                         Plugin.ShotCount = 0;
                         Plugin.PrevShotCount = 0;
-                        Plugin.Timer = 0f;
+                        Plugin.FiringTimer = 0f;
+                    }
+                    if (Plugin.WiggleTimer >= 0.1f)
+                    {
+                        Plugin.IsFiringWiggle = false;
+                        Plugin.WiggleTimer = 0f;
                     }
                 }
             }

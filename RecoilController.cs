@@ -115,7 +115,7 @@ namespace RecoilStandalone
 
         public static void DoCantedRecoil(ref Vector3 targetRecoil, ref Vector3 currentRecoil, ref Quaternion weapRotation)
         {
-            if (Plugin.IsFiring)
+            if (Plugin.IsFiringWiggle)
             {
                 float recoilAmount = Plugin.TotalHRecoil / 35f;
                 float recoilSpeed = Plugin.TotalConvergence * 0.75f;
@@ -124,7 +124,7 @@ namespace RecoilStandalone
             }
             else
             {
-                targetRecoil = Vector3.zero;
+                targetRecoil = Vector3.Lerp(targetRecoil, Vector3.zero, 0.1f);
             }
 
             currentRecoil = Vector3.Lerp(currentRecoil, targetRecoil, 1f);

@@ -385,10 +385,10 @@ namespace RecoilStandalone
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
             IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
-            Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
 
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
+                Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
 
                 float classVMulti = RecoilController.GetVRecoilMulti(weaponClass);
@@ -403,9 +403,9 @@ namespace RecoilStandalone
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
-                float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y * Plugin.DispMulti.Value);
+                float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y) * Plugin.DispMulti.Value;
                 float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti;
-                float hRecoil = Mathf.Min(25f ,Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value);
+                float hRecoil = Mathf.Min(25f, Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value);
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 
                 Plugin.TotalHRecoil = hRecoil * mountingRecoilBonus;
@@ -424,8 +424,10 @@ namespace RecoilStandalone
                     shotVals[i].Process(__instance.RecoilDirection);
                 }
 
-                Plugin.Timer = 0f;
+                Plugin.WiggleTimer = 0f;
+                Plugin.FiringTimer = 0f;
                 Plugin.IsFiring = true;
+                Plugin.IsFiringWiggle = true;
                 Plugin.ShotCount++;
 
                 return false;
@@ -484,5 +486,84 @@ namespace RecoilStandalone
         }
     }
 
+    public class BreathProcessPatch : ModulePatch
+    {
+        protected override MethodBase GetTargetMethod()
+        {
+            return typeof(BreathEffector).GetMethod("Process", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        [PatchPrefix]
+        private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency,
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2139[] ____processors)
+        {
+            float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
+            __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
+            __instance.HipZRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.y + amplGain, 0f, 3f);
+            __instance.HipXRandom.Hardness = (__instance.HipZRandom.Hardness = __instance.Hardness.Value);
+            ____shakeIntensity = 1f;
+            bool isInjured = __instance.TremorOn || __instance.Fracture;
+            float intensityHolder = 1f;
+
+            if (__instance.Physical.HoldingBreath)
+            {
+                ____breathIntensity = 0.15f;
+                ____shakeIntensity = 0.15f;
+            }
+            else if (Time.time < __instance.StiffUntill)
+            {
+                float intensity = Mathf.Clamp(-__instance.StiffUntill + Time.time + 1f, isInjured ? 0.5f : 0.3f, 1f);
+                ____breathIntensity = intensity * __instance.Intensity;
+                ____shakeIntensity = intensity;
+                intensityHolder = intensity;
+            }
+            else
+            {
+                float t = ____lackOfOxygenStrength.Evaluate(__instance.OxygenLevel);
+                float b = __instance.IsAiming ? 0.75f : 1f;
+                ____breathIntensity = Mathf.Clamp(Mathf.Lerp(4f, b, t), 1f, 1.5f) * __instance.Intensity;
+                ____breathFrequency = Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime;
+                ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
+            }
+            GClass786<float> staminaLevel = __instance.StaminaLevel;
+            __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
+            float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
+            __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
+            __instance.YRandom.Hardness = __instance.BreathParams.Hardness.Evaluate(staminaLevel);
+            float randomY = __instance.YRandom.GetValue(deltaTime);
+            float randomX = __instance.XRandom.GetValue(deltaTime);
+            ____handsRotationSpring.AddAcceleration(new Vector3(Mathf.Max(0f, -randomY) * (1f - staminaLevel) * 2f, randomY, randomX) * (____shakeIntensity * __instance.Intensity));
+            Vector3 breathVector = Vector3.zero;
+            if (isInjured)
+            {
+                float tremorSpeed = __instance.TremorOn ? deltaTime : (deltaTime / 2f);
+                tremorSpeed *= intensityHolder;
+                float tremorXRandom = __instance.TremorXRandom.GetValue(tremorSpeed);
+                float tremorYRandom = __instance.TremorYRandom.GetValue(tremorSpeed);
+                float tremorZRnadom = __instance.TremorZRandom.GetValue(tremorSpeed);
+                if (__instance.Fracture && !__instance.IsAiming)
+                {
+                    tremorXRandom += Mathf.Max(0f, randomY) * Mathf.Lerp(1f, 100f / __instance.EnergyFractureLimit, staminaLevel);
+                }
+                breathVector = new Vector3(tremorXRandom, tremorYRandom, tremorZRnadom) * __instance.Intensity;
+            }
+            else if (!__instance.IsAiming)
+            {
+                breathVector = new Vector3(__instance.HipXRandom.GetValue(deltaTime), 0f, __instance.HipZRandom.GetValue(deltaTime)) * (__instance.Intensity * __instance.HipPenalty);
+            }
+
+            if (Vector3.SqrMagnitude(breathVector - ____recoilRotationSpring.Zero) > 0.01f)
+            {
+                ____recoilRotationSpring.Zero = Vector3.Lerp(____recoilRotationSpring.Zero, breathVector, 0.1f);
+            }
+            else
+            {
+                ____recoilRotationSpring.Zero = breathVector;
+            }
+            ____processors[0].ProcessRaw(____breathFrequency, Plugin.BreathIntensity * 0.15f);
+            ____processors[1].ProcessRaw(____breathFrequency, Plugin.BreathIntensity * 0.15f * ____cameraSensetivity);
+            return false;
+        }
+    }
 }
 
