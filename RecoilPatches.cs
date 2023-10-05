@@ -129,7 +129,7 @@ namespace RecoilStandalone
                     FirearmController fc = player.HandsController as FirearmController;
                     float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.4f, 1.75f);
                     float angle = ((90f - Plugin.RecoilAngle) / 50f);
-                    float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.5f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
+                    float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.75f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
                     float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
 
                     float xRotation = 0f;
@@ -138,15 +138,15 @@ namespace RecoilStandalone
                     //S pattern
                     if (!Plugin.IsVector)
                     {
-                        xRotation = Mathf.Lerp(-dispersion * 1.1f, dispersion * 1.1f, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
+                        xRotation = Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
                         yRotation = Mathf.Min(-Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f);
                     }
                     else 
                     {
                         //spiral + pingpong, would work well as vector recoil
-                        spiralTime += Time.deltaTime * 20f;
-                        float recoilAmount = Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor ;
-                        xRotation = Mathf.Sin(spiralTime * 10f) * 1f;
+                        spiralTime += Time.deltaTime * 200f;
+                        xRotation = Mathf.Sin(spiralTime);
+                        float recoilAmount = Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
                         yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)); 
                     }
 
@@ -247,18 +247,17 @@ namespace RecoilStandalone
                 __instance.ProceduralWeaponAnimation.CrankRecoil = Plugin.EnableCrank.Value;
                 __instance.ProceduralWeaponAnimation.Shootingg.Intensity = Plugin.RecoilIntensity.Value * mountingRecoilBonus;
 
-                if (Plugin.IsFiring && isMoving)
+                float swayIntensity = 1f;
+                if (Plugin.IsFiring && isMoving && Plugin.IsAiming)
                 {
-                    float swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus * 0.01f;
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
+                    swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus * 0.01f;
                 }
                 else
                 {
-                    float swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus;
-                    __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
-                    __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
+                    swayIntensity = Plugin.SwayIntensity.Value * mountingSwayBonus;
                 }
+                __instance.ProceduralWeaponAnimation.Breath.Intensity = swayIntensity * Plugin.BreathIntensity;
+                __instance.ProceduralWeaponAnimation.HandsContainer.HandsRotation.InputIntensity = swayIntensity * swayIntensity;
 
                 if (Plugin.IsFiring)
                 {
