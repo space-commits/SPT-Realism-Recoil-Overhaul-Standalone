@@ -20,11 +20,11 @@ namespace RecoilStandalone
                 case "pistol":
                     return 95f;
                 case "shotgun":
-                    return 65f;
+                    return 75f;
                 case "sniperRifle":
                     if (!weap.WeapFireType.Contains(Weapon.EFireMode.fullauto) && weap.Template.BoltAction)
                     {
-                        return 70f;
+                        return 80f;
                     }
                     return 75f;
                 case "marksmanRifle":
