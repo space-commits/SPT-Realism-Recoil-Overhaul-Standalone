@@ -10,12 +10,11 @@ using System;
 using static EFT.Player;
 using EFT.Interactive;
 using System.Linq;
-using PlayerInterface = GInterface114;
-using BuffInfo = SkillsClass.GClass1743;
-using AimingSettings = BackendConfigSettingsClass.GClass1358;
-using InventoryItemHandler = GClass2672;
 using EFT.Animations;
 using System.Collections.Generic;
+using PlayerInterface = GInterface113;
+using AimingSettings = BackendConfigSettingsClass.AimingConfiguration;
+using IWeapon = GInterface273;
 
 namespace RecoilStandalone
 {
@@ -23,16 +22,16 @@ namespace RecoilStandalone
     {
         private static FieldInfo weapRotationField;
         private static FieldInfo currentRotationField;
-        private static FieldInfo pitchField;
+        private static FieldInfo blindfireStrength;
         private static FieldInfo blindfireRotationField;
         private static PropertyInfo overlappingBlindfireField;
 
         protected override MethodBase GetTargetMethod()
         {
-            pitchField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_14");
-            blindfireRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "vector3_6");
-            weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_6");
-            currentRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "quaternion_1");
+            blindfireStrength = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindfireStrength");
+            blindfireRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_blindFireRotation");
+            weapRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_temporaryRotation");
+            currentRotationField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_scopeRotation");
             overlappingBlindfireField = AccessTools.Property(typeof(EFT.Animations.ProceduralWeaponAnimation), "Single_3");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("ApplyComplexRotation", BindingFlags.Instance | BindingFlags.Public);
@@ -46,14 +45,14 @@ namespace RecoilStandalone
         {
             if (!Plugin.CombatStancesIsPresent)
             {
-                PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
+                PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData").GetValue(__instance);
                 if (playerInterface != null && playerInterface.Weapon != null)
                 {
                     Weapon weapon = playerInterface.Weapon;
                     Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                     if (player != null && player.IsYourPlayer)
                     {
-                        float pitch = (float)pitchField.GetValue(__instance);
+                        float pitch = (float)blindfireStrength.GetValue(__instance);
                         float overlappingBlindfire = (float)overlappingBlindfireField.GetValue(__instance);
                         Vector3 blindFireRotation = (Vector3)blindfireRotationField.GetValue(__instance);
                         Quaternion currentRotation = (Quaternion)currentRotationField.GetValue(__instance);
@@ -86,7 +85,7 @@ namespace RecoilStandalone
         protected override MethodBase GetTargetMethod()
         {
             movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
-            playerField = AccessTools.Field(typeof(GClass1667), "player_0");
+            playerField = AccessTools.Field(typeof(MovementContext), "_player");
 
             return typeof(MovementState).GetMethod("Rotate", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -105,8 +104,8 @@ namespace RecoilStandalone
         [PatchPrefix]
         private static void Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
         {
-            GClass1667 MovementContext = (GClass1667)movementContextField.GetValue(__instance);
-            Player player = (Player)playerField.GetValue(MovementContext);
+            MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
+            Player player = (Player)playerField.GetValue(movementContext);
 
             if (player.IsYourPlayer)
             {
@@ -116,7 +115,6 @@ namespace RecoilStandalone
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !Plugin.HasStock && !Plugin.EnableHybridReset.Value;
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
-
 
                 if (Plugin.ShotCount > Plugin.PrevShotCount)
                 {
@@ -130,7 +128,8 @@ namespace RecoilStandalone
                     float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.4f, 1.75f);
                     float angle = ((90f - Plugin.RecoilAngle) / 50f);
                     float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.75f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
-                    float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value, 0.1f);
+                    float dispSpeedFactor = 2f - Plugin.RecoilDetla;
+                    float dispersionSpeed = Math.Max(Time.time * Plugin.RecoilDispersionSpeed.Value * dispSpeedFactor, 0.1f);
 
                     float xRotation = 0f;
                     float yRotation = 0f;
@@ -156,11 +155,11 @@ namespace RecoilStandalone
                                   float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
 
 
-                    targetRotation = MovementContext.Rotation + new Vector2(xRotation, yRotation);
+                    targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
 
-                    if ((canResetVert && (MovementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
+                    if ((canResetVert && (movementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
                     {
-                        recordedRotation = MovementContext.Rotation;
+                        recordedRotation = movementContext.Rotation;
                     }
 
                 }
@@ -171,30 +170,30 @@ namespace RecoilStandalone
                     bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
 
-                    Vector2 resetTarget = MovementContext.Rotation;
+                    Vector2 resetTarget = movementContext.Rotation;
 
                     if (canResetVert && canResetHorz && xIsBelowThreshold && yIsBelowThreshold)
                     {
                         resetTarget = new Vector2(recordedRotation.x, recordedRotation.y);
-                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, recordedRotation.y), resetSpeed);
                     }
                     else if (canResetHorz && xIsBelowThreshold)
                     {
-                        resetTarget = new Vector2(recordedRotation.x, MovementContext.Rotation.y);
-                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(recordedRotation.x, MovementContext.Rotation.y), resetSpeed);
+                        resetTarget = new Vector2(recordedRotation.x, movementContext.Rotation.y);
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(recordedRotation.x, movementContext.Rotation.y), resetSpeed);
                     }
                     else if (canResetVert && yIsBelowThreshold)
                     {
-                        resetTarget = new Vector2(MovementContext.Rotation.x, recordedRotation.y);
-                        MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, new Vector2(MovementContext.Rotation.x, recordedRotation.y), resetSpeed);
+                        resetTarget = new Vector2(movementContext.Rotation.x, recordedRotation.y);
+                        movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, new Vector2(movementContext.Rotation.x, recordedRotation.y), resetSpeed);
                     }
                     else
                     {
-                        resetTarget = MovementContext.Rotation;
-                        recordedRotation = MovementContext.Rotation;
+                        resetTarget = movementContext.Rotation;
+                        recordedRotation = movementContext.Rotation;
                     }
 
-                    resetTimer(resetTarget, MovementContext.Rotation);
+                    resetTimer(resetTarget, movementContext.Rotation);
                 }
                 else if (!Plugin.IsFiring)
                 {
@@ -207,16 +206,16 @@ namespace RecoilStandalone
                         Plugin.PlayerControl = 0f;
                     }
 
-                    recordedRotation = MovementContext.Rotation;
+                    recordedRotation = movementContext.Rotation;
                 }
                 if (Plugin.IsFiring)
                 {
                     if (targetRotation.y <= recordedRotation.y - Plugin.RecoilClimbLimit.Value)
                     {
-                        targetRotation.y = MovementContext.Rotation.y;
+                        targetRotation.y = movementContext.Rotation.y;
                     }
 
-                    MovementContext.Rotation = Vector2.Lerp(MovementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
+                    movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
 
                 if (Plugin.ShotCount == Plugin.PrevShotCount)
@@ -267,6 +266,15 @@ namespace RecoilStandalone
                 {
                     __instance.ProceduralWeaponAnimation.HandsContainer.HandsPosition.Damping = 0.45f;
                 }
+
+                if (Utils.WeaponReady && __instance?.ProceduralWeaponAnimation != null && __instance.ProceduralWeaponAnimation?.CurrentScope != null)
+                {
+                    Plugin.HasOptic = __instance.ProceduralWeaponAnimation.CurrentScope.IsOptic ? true : false;
+                }
+                else 
+                {
+                    Plugin.HasOptic = false;
+                }
             }
         }
     }
@@ -281,8 +289,7 @@ namespace RecoilStandalone
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0").GetValue(__instance);
-
+            PlayerInterface playerInterface = (PlayerInterface)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData").GetValue(__instance);
             if (playerInterface != null && playerInterface.Weapon != null)
             {
                 Weapon weapon = playerInterface.Weapon;
@@ -317,11 +324,11 @@ namespace RecoilStandalone
 
     public class UpdateSwayFactorsPatch : ModulePatch
     {
-        private static FieldInfo ginterface114Field;
+        private static FieldInfo playerInterfaceField;
 
         protected override MethodBase GetTargetMethod()
         {
-            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
+            playerInterfaceField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("UpdateSwayFactors", BindingFlags.Instance | BindingFlags.Public);
         }
@@ -329,15 +336,15 @@ namespace RecoilStandalone
         [PatchPostfix]
         private static void PatchPostfix(ref EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            PlayerInterface ginterface114 = (PlayerInterface)ginterface114Field.GetValue(__instance);
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            PlayerInterface playerInterface = (PlayerInterface)playerInterfaceField.GetValue(__instance);
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.MovementContext.CurrentState.Name != EPlayerState.Stationary && player.IsYourPlayer)
                 {
-                    float float_20 = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "float_20").GetValue(__instance);
-                    __instance.MotionReact.SwayFactors = new Vector3(float_20, __instance.IsAiming ? (float_20 * 0.3f) : float_20, float_20) * Plugin.SwayIntensity.Value;
+                    float swayStrn = (float)AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_swayStrength").GetValue(__instance);
+                    __instance.MotionReact.SwayFactors = new Vector3(swayStrn, __instance.IsAiming ? (swayStrn * 0.3f) : swayStrn, swayStrn) * Plugin.SwayIntensity.Value;
                 } 
             }
         }
@@ -384,7 +391,6 @@ namespace RecoilStandalone
         public static bool Prefix(ref ShotEffector __instance, float str = 1f)
         {
             IWeapon iWeapon = (IWeapon)iWeaponField.GetValue(__instance);
-
             if (iWeapon.Item.Owner.ID.StartsWith("pmc") || iWeapon.Item.Owner.ID.StartsWith("scav"))
             {
                 Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
@@ -402,13 +408,17 @@ namespace RecoilStandalone
                 __instance.ShotVals[3].Intensity = cameraRecoil;
                 __instance.ShotVals[4].Intensity = -cameraRecoil;
 
-                float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y) * Plugin.DispMulti.Value;
-                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti;
-                float hRecoil = Mathf.Min(25f, Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value);
+                float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
+                float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 10f * fovFactor : 15f * fovFactor;
+                float hRecoil = Mathf.Min(25f, Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value) * mountingRecoilBonus;
+                Plugin.TotalHRecoil = hRecoil;
+                hRecoil = Mathf.Min(hRecoil * fovFactor, opticLimit);
+
+                float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y) * Plugin.DispMulti.Value * mountingRecoilBonus * (1f + weaponClass.RecoilDelta);
+                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti * mountingRecoilBonus;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 
-                Plugin.TotalHRecoil = hRecoil * mountingRecoilBonus;
-                Plugin.TotalVRecoil = vertRecoil * mountingRecoilBonus;
+                Plugin.TotalVRecoil = vertRecoil;
                 Plugin.TotalDispersion = weaponClass.Template.RecolDispersion * mountingRecoilBonus * (1f + weaponClass.RecoilDelta);
 
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
@@ -436,11 +446,11 @@ namespace RecoilStandalone
     }
     public class ShootPatch : ModulePatch
     {
-        private static FieldInfo ginterface114Field;
+        private static FieldInfo playerInterfaceField;
 
         protected override MethodBase GetTargetMethod()
         {
-            ginterface114Field = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "ginterface114_0");
+            playerInterfaceField = AccessTools.Field(typeof(EFT.Animations.ProceduralWeaponAnimation), "_firearmAnimationData");
 
             return typeof(EFT.Animations.ProceduralWeaponAnimation).GetMethod("Shoot");
         }
@@ -448,11 +458,11 @@ namespace RecoilStandalone
         [PatchPostfix]
         public static void PatchPostfix(EFT.Animations.ProceduralWeaponAnimation __instance)
         {
-            PlayerInterface ginterface114 = (PlayerInterface)ginterface114Field.GetValue(__instance);
+            PlayerInterface playerInterface = (PlayerInterface)playerInterfaceField.GetValue(__instance);
 
-            if (ginterface114 != null && ginterface114.Weapon != null)
+            if (playerInterface != null && playerInterface.Weapon != null)
             {
-                Weapon weapon = ginterface114.Weapon;
+                Weapon weapon = playerInterface.Weapon;
                 Player player = Singleton<GameWorld>.Instance.GetAlivePlayerByProfileID(weapon.Owner.ID);
                 if (player != null && player.IsYourPlayer && player.MovementContext.CurrentState.Name != EPlayerState.Stationary)
                 {
@@ -494,7 +504,7 @@ namespace RecoilStandalone
 
         [PatchPrefix]
         private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency,
-        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2139[] ____processors)
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2038[] ____processors)
         {
             float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
             __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
@@ -524,7 +534,7 @@ namespace RecoilStandalone
                 ____breathFrequency = Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime;
                 ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
             }
-            GClass786<float> staminaLevel = __instance.StaminaLevel;
+            GClass674<float> staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
             __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
