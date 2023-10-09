@@ -101,6 +101,10 @@ namespace RecoilStandalone
 
         public static float PlayerControl = 0f;
 
+        public static bool HasOptic = false;
+
+        public static float RecoilDetla = 1f;
+
         void Awake()
         {
             string testing = "0. Testing";
@@ -126,8 +130,8 @@ namespace RecoilStandalone
             RecoilSmoothness = Config.Bind<float>(RecoilClimbSettings, "Recoil Smoothness", 0.05f, new ConfigDescription("How Fast Recoil Moves Weapon While Firing, Higher Value Increases Smoothness.", new AcceptableValueRange<float>(0f, 2f), new ConfigurationManagerAttributes { Order = 40 }));
             RecoilClimbFactor = Config.Bind<float>(RecoilClimbSettings, "Recoil Climb Multi", 0.12f, new ConfigDescription("Multiplier For How Much The Weapon Climbs Vertically Per Shot. Weapon's Vertical Recoil Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 30 }));
             RecoilClimbLimit = Config.Bind<float>(RecoilClimbSettings, "Recoil Climb Limit", 10f, new ConfigDescription("How Far Recoil Can Climb.", new AcceptableValueRange<float>(0f, 100f), new ConfigurationManagerAttributes { Order = 25 }));
-            RecoilDispersionFactor = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Multi", 0.025f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
-            RecoilDispersionSpeed = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Speed Multi", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
+            RecoilDispersionFactor = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Multi.", 0.02f, new ConfigDescription("Increases The Size The Classic S Pattern. Weapon's Dispersion Stat Increases This.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 20 }));
+            RecoilDispersionSpeed = Config.Bind<float>(RecoilClimbSettings, "S-Pattern Speed Multi.", 2f, new ConfigDescription("Increases The Speed At Which Recoil Makes The Classic S Pattern.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
 
             RecoilIntensity = Config.Bind<float>(RecoilSettings, "Recoil Intensity", 1f, new ConfigDescription("Changes The Overall Intenisty Of Recoil. This Will Increase/Decrease Horizontal Recoil, Dispersion, Vertical Recoil. Does Not Affect Recoil Climb Much, Mostly Spread And Visual.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 50 }));
             VertMulti = Config.Bind<float>(RecoilSettings, "Vertical Recoil Multi.", 0.55f, new ConfigDescription("Up/Down. Will Also Increase Recoil Climb.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 40 }));
