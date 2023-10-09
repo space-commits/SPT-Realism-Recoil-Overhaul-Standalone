@@ -80,8 +80,6 @@ namespace RecoilStandalone
         private static float timer = 0.0f;
         private static float resetTime = 0.5f;
 
-        private static float spiralTime;
-
         protected override MethodBase GetTargetMethod()
         {
             movementContextField = AccessTools.Field(typeof(MovementState), "MovementContext");
@@ -142,18 +140,11 @@ namespace RecoilStandalone
                     }
                     else 
                     {
-                        //spiral + pingpong, would work well as vector recoil
-                        spiralTime += Time.deltaTime * 200f;
-                        xRotation = Mathf.Sin(spiralTime);
                         float recoilAmount = Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor;
-                        yRotation = Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)); 
+                        dispersion = Mathf.Max(Plugin.TotalDispersion * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
+                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(Time.time * 8f, 1f)), 3);
+                        yRotation = (float)Math.Round(Mathf.Lerp(-recoilAmount, recoilAmount, Mathf.PingPong(Time.time * 4f, 1f)), 3);
                     }
-
-                    //Spiral/circular, could modify x axis with ping pong or something to make it more random or simply use random.range
-                    /*              spiralTime += Time.deltaTime * 20f;
-                                  float xRotaion = Mathf.Sin(spiralTime * 10f) * 1f;
-                                  float yRotation = Mathf.Cos(spiralTime * 10f) * 1f;*/
-
 
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
 
