@@ -1,4 +1,5 @@
 ﻿using Comfort.Common;
+using EFT;
 using EFT.Animations;
 using EFT.InventoryLogic;
 using System;
@@ -41,11 +42,7 @@ namespace RecoilStandalone
                 case "smg":
                     return 1.25f;
                 case "pistol":
-                    if (weap.Template.Convergence >= 4)
-                    {
-                        return 0.25f;
-                    }
-                    return 1f;
+                    return 0.35f;
                 case "shotgun":
                     return 0.25f;
                 case "sniperRifle":
@@ -134,7 +131,8 @@ namespace RecoilStandalone
 
         public static void SetRecoilParams(ProceduralWeaponAnimation pwa, Weapon weap, bool isMoving) 
         {
-            pwa.HandsContainer.Recoil.Damping = (float)Math.Round(Plugin.RecoilDamping.Value, 3);
+            float vertDamping = weap.WeapClass == "pistol" ? Mathf.Min(Plugin.RecoilDamping.Value, 0.65f) : Plugin.RecoilDamping.Value;
+            pwa.HandsContainer.Recoil.Damping = (float)Math.Round(vertDamping, 3);
             
             if (Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !Plugin.HasStock)))
             {

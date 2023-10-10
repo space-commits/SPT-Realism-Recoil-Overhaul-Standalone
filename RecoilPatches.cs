@@ -107,6 +107,7 @@ namespace RecoilStandalone
 
             if (player.IsYourPlayer)
             {
+                deltaRotation = movementContext.ClampRotation(deltaRotation);
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
                 //restet is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
@@ -132,11 +133,10 @@ namespace RecoilStandalone
                     float xRotation = 0f;
                     float yRotation = 0f;
 
-                    //S pattern
                     if (!Plugin.IsVector)
                     {
-                        xRotation = Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle;
-                        yRotation = Mathf.Min(-Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f);
+                        xRotation = (float)Math.Round(Mathf.Lerp(-dispersion, dispersion, Mathf.PingPong(dispersionSpeed, 1f)) + angle, 3);
+                        yRotation = (float)Math.Round(Mathf.Min(-Plugin.TotalVRecoil * Plugin.RecoilClimbFactor.Value * shotCountFactor * fpsFactor, 0f), 3);
                     }
                     else 
                     {
@@ -147,7 +147,7 @@ namespace RecoilStandalone
                     }
 
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
-
+                   
                     if ((canResetVert && (movementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
                     {
                         recordedRotation = movementContext.Rotation;
@@ -156,10 +156,12 @@ namespace RecoilStandalone
                 }
                 else if (!hasReset && !Plugin.IsFiring)
                 {
-                    float resetSpeed = Plugin.TotalConvergence * Plugin.ResetSpeed.Value;
+                    bool isHybrid = Plugin.EnableHybridRecoil.Value && (Plugin.HybridForAll.Value || (!Plugin.HybridForAll.Value && !Plugin.HasStock));
+                    float resetSpeed = Plugin.TotalConvergence * Plugin.ResetSpeed.Value * (2f - Plugin.RecoilDetla);
+                    float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
 
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Plugin.ResetSensitivity.Value;
-                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= Plugin.ResetSensitivity.Value;
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f);
+                    bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
 
                     Vector2 resetTarget = movementContext.Rotation;
 
@@ -192,7 +194,7 @@ namespace RecoilStandalone
                     {
                         Plugin.PlayerControl += Mathf.Abs(deltaRotation.y) * Plugin.PlayerControlMulti.Value;
                     }
-                    else 
+                    else
                     {
                         Plugin.PlayerControl = 0f;
                     }
@@ -397,9 +399,7 @@ namespace RecoilStandalone
                 float cameraRecoil = weaponClass.Template.CameraRecoil * Plugin.CamMulti.Value * str * classCamMulti;
                 Plugin.TotalCameraRecoil = cameraRecoil * mountingRecoilBonus;
 
-
-            
-                float angle = Mathf.LerpAngle(weaponClass.Template.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
+                float angle = Mathf.LerpAngle(Plugin.RecoilAngle, 90f, buffInfo.RecoilSupression.y);
                 float factoredDispersion = (weaponClass.Template.RecolDispersion / (1f + buffInfo.RecoilSupression.y)) * Plugin.DispMulti.Value * mountingRecoilBonus * (1f + weaponClass.RecoilDelta);
                 Plugin.TotalDispersion = factoredDispersion;
                 __instance.RecoilDegree = new Vector2(angle - factoredDispersion, angle + factoredDispersion);
@@ -418,7 +418,7 @@ namespace RecoilStandalone
                 float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti * mountingRecoilBonus;
                 __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 
-                Plugin.TotalVRecoil = vertRecoil;
+                Plugin.TotalVRecoil = weaponClass.WeapClass == "pistol" ?  vertRecoil * 0.5f : vertRecoil;
     
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
