@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using PlayerInterface = GInterface113;
 using AimingSettings = BackendConfigSettingsClass.AimingConfiguration;
 using IWeapon = GInterface273;
+using WeaponSkillsClass = EFT.SkillManager.GClass1638;
+using ProcessorClass = GClass2039;
+using StaminaLevelClass = GClass674<float>;
 
 namespace RecoilStandalone
 {
@@ -390,7 +393,7 @@ namespace RecoilStandalone
             {
                 Weapon weaponClass = (Weapon)weaponClassField.GetValue(__instance);
                 Vector3 separateIntensityFactors = (Vector3)intensityFactorsField.GetValue(__instance);
-                SkillManager.GClass1638 buffInfo = (SkillManager.GClass1638)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
+                WeaponSkillsClass buffInfo = (WeaponSkillsClass)AccessTools.Field(typeof(ShotEffector), "_buffs").GetValue(__instance);
 
                 float classVMulti = RecoilController.GetVRecoilMulti(weaponClass);
                 float classCamMulti = RecoilController.GetCamRecoilMulti(weaponClass);
@@ -503,7 +506,7 @@ namespace RecoilStandalone
 
         [PatchPrefix]
         private static bool PatchPrefix(BreathEffector __instance, float deltaTime, float ____breathIntensity, float ____shakeIntensity, float ____breathFrequency,
-        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, GClass2038[] ____processors)
+        float ____cameraSensetivity, Vector2 ____baseHipRandomAmplitudes, Spring ____recoilRotationSpring, Spring ____handsRotationSpring, AnimationCurve ____lackOfOxygenStrength, ProcessorClass[] ____processors)
         {
             float amplGain = Mathf.Sqrt(__instance.AmplitudeGain.Value);
             __instance.HipXRandom.Amplitude = Mathf.Clamp(____baseHipRandomAmplitudes.x + amplGain, 0f, 3f);
@@ -533,7 +536,7 @@ namespace RecoilStandalone
                 ____breathFrequency = Mathf.Clamp(Mathf.Lerp(4f, 1f, t), 1f, 2.5f) * deltaTime;
                 ____cameraSensetivity = Mathf.Lerp(2f, 0f, t) * __instance.Intensity;
             }
-            GClass674<float> staminaLevel = __instance.StaminaLevel;
+            StaminaLevelClass staminaLevel = __instance.StaminaLevel;
             __instance.YRandom.Amplitude = __instance.BreathParams.AmplitudeCurve.Evaluate(staminaLevel);
             float stamFactor = __instance.BreathParams.Delay.Evaluate(staminaLevel);
             __instance.XRandom.MinMaxDelay = (__instance.YRandom.MinMaxDelay = new Vector2(stamFactor / 2f, stamFactor));
