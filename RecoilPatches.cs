@@ -103,7 +103,7 @@ namespace RecoilStandalone
         }
 
         [PatchPrefix]
-        private static void Prefix(MovementState __instance, ref Vector2 deltaRotation, bool ignoreClamp)
+        private static void Prefix(MovementState __instance, Vector2 deltaRotation, bool ignoreClamp)
         {
             MovementContext movementContext = (MovementContext)movementContextField.GetValue(__instance);
             Player player = (Player)playerField.GetValue(movementContext);
@@ -413,16 +413,17 @@ namespace RecoilStandalone
 
                 float fovFactor = (Singleton<SharedGameSettingsClass>.Instance.Game.Settings.FieldOfView / 70f);
                 float opticLimit = Plugin.IsAiming && Plugin.HasOptic ? 10f * fovFactor : 15f * fovFactor;
+                Plugin.TotalHRecoil = __instance.RecoilStrengthZ.y * str * mountingRecoilBonus * Plugin.HorzMulti.Value;
                 float hRecoil = Mathf.Min(25f, Random.Range(__instance.RecoilStrengthZ.x, __instance.RecoilStrengthZ.y) * str * Plugin.HorzMulti.Value) * mountingRecoilBonus;
-                Plugin.TotalHRecoil = hRecoil;
                 hRecoil = Mathf.Min(hRecoil * fovFactor, opticLimit);
 
+                float vertRecoil = __instance.RecoilStrengthXy.y * str * classVMulti * mountingRecoilBonus * Plugin.VertMulti.Value;
+                Plugin.TotalVRecoil = weaponClass.WeapClass == "pistol" ? vertRecoil * 0.5f : vertRecoil;
+                float totalVertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti * mountingRecoilBonus;
+
                 float recoilRadian = Random.Range(__instance.RecoilRadian.x, __instance.RecoilRadian.y);
-                float vertRecoil = Random.Range(__instance.RecoilStrengthXy.x, __instance.RecoilStrengthXy.y) * str * Plugin.VertMulti.Value * classVMulti * mountingRecoilBonus;
-                __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * vertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * vertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
+                __instance.RecoilDirection = new Vector3(-Mathf.Sin(recoilRadian) * totalVertRecoil * separateIntensityFactors.x, Mathf.Cos(recoilRadian) * totalVertRecoil * separateIntensityFactors.y, hRecoil * separateIntensityFactors.z) * __instance.Intensity;
                 
-                Plugin.TotalVRecoil = weaponClass.WeapClass == "pistol" ?  vertRecoil * 0.5f : vertRecoil;
-    
                 Vector2 heatDirection = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveDir : Vector2.zero;
                 float heatFactor = (iWeapon != null) ? iWeapon.MalfState.OverheatBarrelMoveMult : 0f;
                 float totalRecoilFactor = (__instance.RecoilRadian.x + __instance.RecoilRadian.y) / 2f * ((__instance.RecoilStrengthXy.x + __instance.RecoilStrengthXy.y) / 2f) * heatFactor;
