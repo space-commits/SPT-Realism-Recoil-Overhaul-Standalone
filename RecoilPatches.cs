@@ -113,7 +113,7 @@ namespace RecoilStandalone
                 deltaRotation = movementContext.ClampRotation(deltaRotation);
                 float fpsFactor = 144f / (1f / Time.unscaledDeltaTime);
 
-                //restet is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
+                //reset is enabled && if hybrid for all is NOT enabled || if hybrid is eanbled + for all is false + is pistol or folded stock/stockless
                 bool hybridBlocksReset = Plugin.EnableHybridRecoil.Value && !Plugin.HasStock && !Plugin.EnableHybridReset.Value;
                 bool canResetVert = Plugin.ResetVertical.Value && !hybridBlocksReset;
                 bool canResetHorz = Plugin.ResetHorizontal.Value && !hybridBlocksReset;
@@ -126,7 +126,6 @@ namespace RecoilStandalone
                     hasReset = false;
                     timer = 0f;
 
-                    FirearmController fc = player.HandsController as FirearmController;
                     float shotCountFactor = Mathf.Min(Plugin.ShotCount * 0.4f, 1.75f);
                     float angle = ((90f - Plugin.RecoilAngle) / 50f);
                     float dispersion = Mathf.Max(Plugin.TotalDispersion * 2.75f * Plugin.RecoilDispersionFactor.Value * shotCountFactor * fpsFactor, 0f);
@@ -150,12 +149,11 @@ namespace RecoilStandalone
                     }
 
                     targetRotation = movementContext.Rotation + new Vector2(xRotation, yRotation);
-                   
-                    if ((canResetVert && (movementContext.Rotation.y > recordedRotation.y + 2f || deltaRotation.y <= -1f)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f))
+
+                    if ((canResetVert && (movementContext.Rotation.y > (recordedRotation.y + 2f) * Plugin.NewPOASensitivity.Value || deltaRotation.y <= -1f * Plugin.NewPOASensitivity.Value)) || (canResetHorz && Mathf.Abs(deltaRotation.x) >= 1f * Plugin.NewPOASensitivity.Value))
                     {
                         recordedRotation = movementContext.Rotation;
                     }
-
                 }
                 else if (!hasReset && !Plugin.IsFiring)
                 {
@@ -163,7 +161,7 @@ namespace RecoilStandalone
                     float resetSpeed = Plugin.TotalConvergence * Plugin.ResetSpeed.Value * (2f - Plugin.RecoilDetla);
                     float resetSens = isHybrid ? (float)Math.Round(Plugin.ResetSensitivity.Value * 0.4f, 3) : Plugin.ResetSensitivity.Value;
 
-                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp(resetSens / 2.5f, 0f, 0.1f);
+                    bool xIsBelowThreshold = Mathf.Abs(deltaRotation.x) <= Mathf.Clamp((float)Math.Round(resetSens / 2.5f, 3), 0f, 0.1f);
                     bool yIsBelowThreshold = Mathf.Abs(deltaRotation.y) <= resetSens;
 
                     Vector2 resetTarget = movementContext.Rotation;
@@ -210,6 +208,8 @@ namespace RecoilStandalone
                     {
                         targetRotation.y = movementContext.Rotation.y;
                     }
+                    float difference = Mathf.Abs(movementContext.Rotation.x - targetRotation.x);
+                    targetRotation.x = difference <= 2f ? targetRotation.x : movementContext.Rotation.x;
 
                     movementContext.Rotation = Vector2.Lerp(movementContext.Rotation, targetRotation, Plugin.RecoilSmoothness.Value);
                 }
