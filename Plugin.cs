@@ -45,6 +45,7 @@ namespace RecoilStandalone
         public static ConfigEntry<bool> ResetHorizontal { get; set; }
         public static ConfigEntry<float> RecoilClimbLimit { get; set; }
         public static ConfigEntry<float> PlayerControlMulti { get; set; }
+        public static ConfigEntry<float> NewPOASensitivity { get; set; }
 
         public static ConfigEntry<bool> EnableHybridRecoil { get; set; }
         public static ConfigEntry<bool> EnableHybridReset { get; set; }
@@ -140,7 +141,8 @@ namespace RecoilStandalone
             CamMulti = Config.Bind<float>(RecoilSettings, "Camera Recoil Multi", 1f, new ConfigDescription("Visual Camera Recoil.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 10 }));
             ConvergenceMulti = Config.Bind<float>(RecoilSettings, "Convergence Multi", 15f, new ConfigDescription("AKA Auto-Compensation. Higher = Snappier Recoil, Faster Reset And Tighter Recoil Pattern.", new AcceptableValueRange<float>(0f, 40f), new ConfigurationManagerAttributes { Order = 1 }));
              
-            ConvergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 1f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { Order = 100 }));
+            ConvergenceSpeedCurve = Config.Bind<float>(AdvancedRecoilSettings, "Convergence Curve Multi", 1f, new ConfigDescription("The Convergence Curve. Lower Means More Recoil.", new AcceptableValueRange<float>(0.01f, 1.5f), new ConfigurationManagerAttributes { Order = 110 }));
+            NewPOASensitivity = Config.Bind<float>(AdvancedRecoilSettings, "Reset Position Shift Sensitvity", 0.5f, new ConfigDescription("Multi For The Amount Of Mouse Movement Needed While Firing To Change The Position To Where Aim Will Reset After Firing. Lower = Less Movement Needed.", new AcceptableValueRange<float>(0f, 5f), new ConfigurationManagerAttributes { Order = 100 }));
             ResetTime = Config.Bind<float>(AdvancedRecoilSettings, "Time Before Reset.", 0.14f, new ConfigDescription("The Time In Seconds That Has To Be Elapsed Before Firing Is Considered Over, Recoil Will Not Reset Until It Is Over.", new AcceptableValueRange<float>(0.1f, 0.5f), new ConfigurationManagerAttributes { Order = 10 }));
             EnableCrank = Config.Bind<bool>(AdvancedRecoilSettings, "Rearward Recoil", true, new ConfigDescription("Makes Recoil Go Towards Player's Shoulder Instead Of Forward.", null, new ConfigurationManagerAttributes { Order = 3 }));
             HandsDamping = Config.Bind<float>(AdvancedRecoilSettings, "Rearward Recoil Wiggle", 0.7f, new ConfigDescription("The Amount Of Rearward Wiggle After Firing.", new AcceptableValueRange<float>(0.2f, 0.9f), new ConfigurationManagerAttributes { Order = 1 }));
